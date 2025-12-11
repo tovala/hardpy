@@ -128,8 +128,8 @@ def couch_connection() -> dict:
         dict[str, str]: couchdb connection string
     """
     config = ConfigManager().get_config()
-    database_host = config.database.host
-    connection_url = f"http://{config.database.user}:{config.database.password}@{database_host}:{config.database.port}/"
+    database_host = config.database_frontend.host
+    connection_url = f"http://{config.database_frontend.user}:{config.database_frontend.password}@{database_host}:{config.database_frontend.port}/"
 
     return {
         "connection_str": connection_url,

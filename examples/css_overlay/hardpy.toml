@@ -9,6 +9,12 @@ password = "dev"
 host = "192.168.30.144"
 port = 5984
 
+[database_frontend]
+user = "dev"
+password = "dev"
+host = "192.168.30.144"
+port = 5984
+
 [frontend]
 host = "127.0.0.1"
 port = 8000
