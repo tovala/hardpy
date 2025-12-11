@@ -78,6 +78,12 @@ div, p, span, pre {
   margin-bottom: 0 !important;
 }
 
+/* Highlight running test case */
+.test-case-running {
+  background-color: #fffacd !important;
+  border-left: 4px solid #ffa500 !important;
+}
+
 /* Footer: Start button above progress bar, both full width */
 
 .hardpy-footer {
