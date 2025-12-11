@@ -176,12 +176,12 @@ function App(): JSX.Element {
         const response = await fetch("/api/hardpy_config");
         const config = await response.json();
         setHardpyConfig(config);
-        
+
         // Initialize sound setting from TOML config
         if (config.sound_on !== undefined) {
           setUseEndTestSound(config.sound_on);
         }
-        
+
         // Show overlay if no current test config is selected
         if (!config.current_test_config && config.test_configs && config.test_configs.length > 0) {
           setShowConfigOverlay(true);
@@ -190,8 +190,30 @@ function App(): JSX.Element {
         console.error("Failed to load HardPy config:", error);
       }
     };
-    
+
     loadConfig();
+  }, []);
+
+  // Load custom CSS from project directory
+  React.useEffect(() => {
+    const loadCustomCSS = async () => {
+      try {
+        const response = await fetch("/api/custom_css");
+        if (response.ok) {
+          const cssText = await response.text();
+          if (cssText) {
+            const style = document.createElement('style');
+            style.setAttribute('id', 'hardpy-custom-css');
+            style.textContent = cssText;
+            document.head.appendChild(style);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to load custom CSS:", error);
+      }
+    };
+
+    loadCustomCSS();
   }, []);
 
   // Close config overlay when test starts running
@@ -542,41 +564,12 @@ function App(): JSX.Element {
 
       {/* Footer */}
 
-      <div
-        className={Classes.DRAWER_FOOTER}
-        style={{
-          width: "100%",
-          display: "flex",
-          flexDirection: "column",
-          position: "fixed",
-          bottom: 0,
-          background: Colors.LIGHT_GRAY5,
-          margin: "auto",
-        }}
-      >
-        <div
-          style={{
-            width: "100%",
-            padding: "10px 20px",
-            display: "flex",
-            justifyContent: "center",
-          }}
-        >
-          <div style={{ width: "100%" }}>
-            <StartStopButton testing_status={lastRunStatus} />
-          </div>
-        </div>
-        <div
-          style={{
-            flexDirection: "column",
-            flexGrow: 1,
-            flexShrink: 1,
-            marginTop: "auto",
-            marginBottom: "auto",
-            padding: "10px 20px",
-          }}
-        >
+      <div className={`${Classes.DRAWER_FOOTER} hardpy-footer`}>
+        <div className="hardpy-footer-progress">
           <ProgressView percentage={lastProgress} status={lastRunStatus} />
+        </div>
+        <div className="hardpy-footer-button">
+          <StartStopButton testing_status={lastRunStatus} />
         </div>
       </div>
 

@@ -10,6 +10,7 @@ from typing import Annotated
 from urllib.parse import unquote
 
 from fastapi import FastAPI, Query
+from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 
 from hardpy.common.config import ConfigManager
@@ -127,8 +128,8 @@ def couch_connection() -> dict:
         dict[str, str]: couchdb connection string
     """
     config = ConfigManager().get_config()
-    frontend_url = config.frontend.url
-    connection_url = f"http://{config.database.user}:{config.database.password}@{frontend_url}:{config.database.port}/"
+    database_host = config.database.host
+    connection_url = f"http://{config.database.user}:{config.database.password}@{database_host}:{config.database.port}/"
 
     return {
         "connection_str": connection_url,
@@ -171,6 +172,23 @@ def confirm_operator_msg(is_msg_visible: str) -> dict:
     if app.state.pytest_wrp.send_data(str(is_msg_visible)):
         return {"status": Status.BUSY}
     return {"status": Status.ERROR}
+
+
+@app.get("/api/custom_css")
+def get_custom_css() -> Response:
+    """Get custom CSS from project directory.
+
+    Returns:
+        Response: CSS file content or empty CSS if not found
+    """
+    css_path = ConfigManager.get_tests_path() / "custom.css"
+    if css_path.exists():
+        return FileResponse(
+            css_path,
+            media_type="text/css",
+            headers={"Cache-Control": "no-cache"},
+        )
+    return Response(content="", media_type="text/css")
 
 
 if "DEBUG_FRONTEND" not in os.environ:

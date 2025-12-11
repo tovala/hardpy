@@ -1,0 +1,50 @@
+/* Footer: 50px high at bottom with progress bar on left, button on right */
+
+.hardpy-footer {
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  height: 50px !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 5px 10px !important;
+  background: #EBF1F5 !important;
+  margin: 0 !important;
+}
+
+/* Progress bar on the left, takes remaining space */
+.hardpy-footer-progress {
+  flex: 1 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+/* Button on the right, fixed width */
+.hardpy-footer-button {
+  flex: 0 0 auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Style the start/stop button */
+#start-stop-button {
+  width: 100px !important;
+  height: 40px !important;
+  font-size: 14px !important;
+  padding: 0 10px !important;
+  min-height: 40px !important;
+}
+
+#start-stop-button .bp3-button-text {
+  padding: 0 !important;
+}
+
+#start-stop-button .bp3-icon {
+  display: none !important;
+}

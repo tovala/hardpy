@@ -117,6 +117,8 @@ export class TestSuite extends React.Component<Props, State> {
     </div>
   );
 
+  private containerRef = React.createRef<HTMLDivElement>();
+
   static defaultProps: Partial<Props> = {
     defaultOpen: true,
   };
@@ -132,48 +134,50 @@ export class TestSuite extends React.Component<Props, State> {
       return <div>{t("testSuite.loading")}</div>;
     }
     return (
-      <Callout style={{ padding: 0, borderRadius: 0 }} className="test-suite">
-        <div style={{ display: "flex" }}>
-          <div style={{ flex: "1 1 0%" }}>
-            <Button
-              style={{ margin: "2px" }}
-              minimal={true}
-              onClick={this.handleClick}
-            >
-              <div style={{ display: "flex", alignItems: "center" }}>
-                <TestStatus
-                  status={
-                    this.props.commonTestRunStatus != "run" &&
-                    (this.props.test.status == "run" ||
-                      this.props.test.status == "ready")
-                      ? "stucked"
-                      : this.props.test.status
-                  }
-                />
-                <Icon
-                  style={{ marginRight: "10px", marginLeft: "10px" }}
-                  icon={this.state.isOpen ? "chevron-down" : "chevron-right"}
-                ></Icon>
-                <span>
-                  {this.renderName(this.props.test.name, this.props.index + 1)}
-                </span>
-              </div>
-            </Button>
+      <div ref={this.containerRef}>
+        <Callout style={{ padding: 0, borderRadius: 0 }} className="test-suite">
+          <div style={{ display: "flex" }}>
+            <div style={{ flex: "1 1 0%" }}>
+              <Button
+                style={{ margin: "2px" }}
+                minimal={true}
+                onClick={this.handleClick}
+              >
+                <div style={{ display: "flex", alignItems: "center" }}>
+                  <TestStatus
+                    status={
+                      this.props.commonTestRunStatus != "run" &&
+                      (this.props.test.status == "run" ||
+                        this.props.test.status == "ready")
+                        ? "stucked"
+                        : this.props.test.status
+                    }
+                  />
+                  <Icon
+                    style={{ marginRight: "10px", marginLeft: "10px" }}
+                    icon={this.state.isOpen ? "chevron-down" : "chevron-right"}
+                  ></Icon>
+                  <span>
+                    {this.renderName(this.props.test.name, this.props.index + 1)}
+                  </span>
+                </div>
+              </Button>
+            </div>
+            {this.renderTestSuiteRightPanel(this.props.test)}
           </div>
-          {this.renderTestSuiteRightPanel(this.props.test)}
-        </div>
-        <Collapse
-          isOpen={this.state.isOpen}
-          keepChildrenMounted={true}
-          className="test-suite-content"
-        >
-          {this.props.test.status != "busy" ? (
-            this.renderTests(this.props.test.cases)
-          ) : (
-            <Spin indicator={TestSuite.LOADING_ICON} />
-          )}
-        </Collapse>
-      </Callout>
+          <Collapse
+            isOpen={this.state.isOpen}
+            keepChildrenMounted={true}
+            className="test-suite-content"
+          >
+            {this.props.test.status != "busy" ? (
+              this.renderTests(this.props.test.cases)
+            ) : (
+              <Spin indicator={TestSuite.LOADING_ICON} />
+            )}
+          </Collapse>
+        </Callout>
+      </div>
     );
   }
 
@@ -188,6 +192,16 @@ export class TestSuite extends React.Component<Props, State> {
 
     if (anyRunningOrFailed && !this.state.isOpen && !this.state.automaticallyOpened) {
       this.setState({ isOpen: true, prevIsOpen: this.state.isOpen, automaticallyOpened: true });
+
+      // Scroll to this test suite when it starts running
+      if (this.containerRef.current) {
+        setTimeout(() => {
+          this.containerRef.current?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center',
+          });
+        }, 100);
+      }
       return;
     }
 
