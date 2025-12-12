@@ -1,0 +1,183 @@
+/* HardPy Default CSS - Can be overridden with custom.css in your test directory */
+
+/* ========================================
+   Layout & Spacing
+   ======================================== */
+
+.error-card {
+  margin-top: 60px;
+}
+
+.main-content {
+  margin-top: 40px;
+}
+
+.test-row {
+  display: flex;
+  flex-direction: row;
+}
+
+.suite-card {
+  flex-direction: column;
+  padding: 20px;
+  flex-grow: 1;
+  flex-shrink: 1;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.debug-card {
+  flex-direction: column;
+  padding: 20px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+/* ========================================
+   Navbar
+   ======================================== */
+
+.navbar-main {
+  background: #d6d9e0;
+  margin: auto;
+}
+
+.navbar-status-group {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+
+.navbar-status-group-mobile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  font-size: 12px;
+}
+
+.navbar-status-group-desktop {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+
+.navbar-heading-with-status {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+
+.navbar-config-button {
+  margin-right: 8px;
+  font-weight: bold;
+}
+
+/* ========================================
+   Footer & Controls
+   ======================================== */
+
+.drawer-footer {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  bottom: 0;
+  background: #eff0f1;
+  margin: auto;
+}
+
+.drawer-body-with-footer {
+  margin-bottom: 60px;
+}
+
+.drawer-body-padding-big-button {
+  padding-bottom: 120px;
+}
+
+.drawer-body-padding-small-button {
+  padding-bottom: 80px;
+}
+
+.footer-big-button-layout {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.footer-progress-wrapper-big {
+  width: 100%;
+  padding: 10px 20px 0px 20px;
+}
+
+.footer-button-wrapper {
+  width: 100%;
+  padding: 10px 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.footer-button-full-width {
+  width: 100%;
+}
+
+.footer-small-button-layout {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+}
+
+.footer-progress-wrapper-small {
+  flex-direction: column;
+  flex-grow: 1;
+  flex-shrink: 1;
+  margin-top: auto;
+  margin-bottom: auto;
+  padding: 20px;
+}
+
+.footer-button-column {
+  flex-direction: column;
+}
+
+/* ========================================
+   Test Status & Results
+   ======================================== */
+
+.test-status-icon {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
+.test-status-ready {
+  background-color: #888;
+}
+
+.test-status-run {
+  background-color: #ffc107;
+}
+
+.test-status-passed {
+  background-color: #4caf50;
+}
+
+.test-status-failed {
+  background-color: #f44336;
+}
+
+.test-status-stopped {
+  background-color: #ff9800;
+}
+
+/* ========================================
+   Custom Overrides Area
+   ======================================== */
+
+/* Add your custom styles below or in custom.css */

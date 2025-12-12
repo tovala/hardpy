@@ -214,6 +214,47 @@ function App({ syncDocumentId }: { syncDocumentId: string }): JSX.Element {
   let [selectedTests, setSelectedTests] = React.useState<string[]>([]);
 
   /**
+   * Loads custom CSS or falls back to default CSS
+   * Tries to fetch custom.css from the test directory via API
+   * Falls back to default.css if custom CSS is not available
+   */
+  React.useEffect(() => {
+    const loadCSS = async () => {
+      try {
+        // Try to fetch custom CSS from the API
+        const response = await fetch("/api/custom_css");
+
+        if (response.ok && response.headers.get("content-type")?.includes("text/css")) {
+          const customCSS = await response.text();
+
+          // Only use custom CSS if it's not empty
+          if (customCSS && customCSS.trim().length > 0) {
+            const linkElement = document.createElement("link");
+            linkElement.rel = "stylesheet";
+            linkElement.href = "/api/custom_css";
+            linkElement.id = "hardpy-custom-css";
+            document.head.appendChild(linkElement);
+            console.log("Loaded custom.css");
+            return;
+          }
+        }
+      } catch (error) {
+        console.log("Custom CSS not available, using default.css");
+      }
+
+      // Fall back to default CSS
+      const linkElement = document.createElement("link");
+      linkElement.rel = "stylesheet";
+      linkElement.href = "/default.css";
+      linkElement.id = "hardpy-default-css";
+      document.head.appendChild(linkElement);
+      console.log("Loaded default.css");
+    };
+
+    loadCSS();
+  }, []);
+
+  /**
    * Loads HardPy configuration from the backend API on component mount
    * Initializes frontend configurations
    */
@@ -663,7 +704,7 @@ function App({ syncDocumentId }: { syncDocumentId: string }): JSX.Element {
   const renderDbContent = (): JSX.Element => {
     if (loading && rows.length === 0) {
       return (
-        <Card style={{ marginTop: "60px" }}>
+        <Card className="error-card">
           <H2>{t("app.connection")}</H2>
         </Card>
       );
@@ -671,7 +712,7 @@ function App({ syncDocumentId }: { syncDocumentId: string }): JSX.Element {
 
     if (state === "error") {
       return (
-        <Card style={{ marginTop: "60px" }}>
+        <Card className="error-card">
           <H2>{t("app.dbError")}</H2>
           {error && <p>{error.message}</p>}
         </Card>
@@ -680,7 +721,7 @@ function App({ syncDocumentId }: { syncDocumentId: string }): JSX.Element {
 
     if (rows.length === 0) {
       return (
-        <Card style={{ marginTop: "60px" }}>
+        <Card className="error-card">
           <H2>{t("app.noEntries")}</H2>
         </Card>
       );
@@ -689,7 +730,7 @@ function App({ syncDocumentId }: { syncDocumentId: string }): JSX.Element {
     const index = findRowIndex(rows, syncDocumentId);
     if (index === -1) {
       return (
-        <Card style={{ marginTop: "60px" }}>
+        <Card className="error-card">
           <H2>{t("app.dbError")}</H2>
           {error && <p>{error.message}</p>}
         </Card>
@@ -700,7 +741,7 @@ function App({ syncDocumentId }: { syncDocumentId: string }): JSX.Element {
 
     if (!document_row) {
       return (
-        <Card style={{ marginTop: "60px" }}>
+        <Card className="error-card">
           <H2>{t("app.dbError")}</H2>
           {error && <p>{error.message}</p>}
         </Card>
@@ -710,22 +751,13 @@ function App({ syncDocumentId }: { syncDocumentId: string }): JSX.Element {
     const testRunData: TestRunI = document_row.doc as TestRunI;
 
     return (
-      <div style={{ marginTop: "40px" }}>
+      <div className="main-content">
         <div
           key={document_row.id}
-          style={{ display: "flex", flexDirection: "row" }}
+          className="test-row"
         >
           {(ultrawide || !use_debug_info) && (
-            <Card
-              style={{
-                flexDirection: "column",
-                padding: "20px",
-                flexGrow: 1,
-                flexShrink: 1,
-                marginTop: "20px",
-                marginBottom: "20px",
-              }}
-            >
+            <Card className="suite-card">
               <SuiteList
                 db_state={testRunData}
                 defaultClose={!ultrawide}
@@ -742,14 +774,7 @@ function App({ syncDocumentId }: { syncDocumentId: string }): JSX.Element {
             </Card>
           )}
           {use_debug_info && (
-            <Card
-              style={{
-                flexDirection: "column",
-                padding: "20px",
-                marginTop: "20px",
-                marginBottom: "20px",
-              }}
-            >
+            <Card className="debug-card">
               <pre>{JSON.stringify(testRunData, null, 2)}</pre>
             </Card>
           )}
@@ -824,7 +849,7 @@ function App({ syncDocumentId }: { syncDocumentId: string }): JSX.Element {
       {/* Header with navigation and status information */}
       <Navbar
         fixedToTop={true}
-        style={{ background: Colors.LIGHT_GRAY4, margin: "auto" }}
+        className="navbar-main"
       >
         <Navbar.Group align={Alignment.LEFT}>
           <Navbar.Heading id={"main-heading"}>
@@ -839,22 +864,12 @@ function App({ syncDocumentId }: { syncDocumentId: string }): JSX.Element {
           {wide && <Navbar.Divider />}
 
           <div
-            style={{
-              display: "flex",
-              flexDirection: wide ? "row" : "column",
-              alignItems: "center",
-              gap: wide ? "10px" : "2px",
-              fontSize: wide ? "inherit" : "12px",
-            }}
+            className={wide ? "navbar-status-group-desktop" : "navbar-status-group-mobile"}
           >
             <Navbar.Heading
               id={"last-exec-heading"}
+              className="navbar-heading-with-status"
               style={{
-                margin: 0,
-                display: "flex",
-                alignItems: "center",
-                gap: "5px",
-                whiteSpace: "nowrap",
                 flexWrap: wide ? "nowrap" : "wrap",
               }}
             >
@@ -882,14 +897,12 @@ function App({ syncDocumentId }: { syncDocumentId: string }): JSX.Element {
         <Navbar.Group align={Alignment.RIGHT}>
           {appConfig && appConfig.current_test_config && (
             <Button
-              className="bp3-minimal"
+              className="bp3-minimal navbar-config-button"
               text={appConfig.current_test_config}
               icon="projects"
               disabled={lastRunStatus === "run"}
               onClick={() => setShowConfigOverlay(true)}
               style={{
-                marginRight: "8px",
-                fontWeight: "bold",
                 color: lastRunStatus === "run" ? Colors.GRAY3 : Colors.BLUE3,
               }}
             />
@@ -902,11 +915,7 @@ function App({ syncDocumentId }: { syncDocumentId: string }): JSX.Element {
 
       {/* Main content area with test suites and results */}
       <div
-        className={Classes.DRAWER_BODY}
-        style={{
-          marginBottom: "60px",
-          paddingBottom: useBigButton ? "120px" : "80px",
-        }}
+        className={`${Classes.DRAWER_BODY} drawer-body-with-footer ${useBigButton ? "drawer-body-padding-big-button" : "drawer-body-padding-small-button"}`}
       >
         {renderDbContent()}
       </div>
@@ -914,39 +923,18 @@ function App({ syncDocumentId }: { syncDocumentId: string }): JSX.Element {
       {/* Footer with progress bar and control buttons */}
       {isConfigLoaded && (
         <div
-          className={Classes.DRAWER_FOOTER}
-          style={{
-            width: "100%",
-            display: "flex",
-            flexDirection: "column",
-            position: "fixed",
-            bottom: 0,
-            background: Colors.LIGHT_GRAY5,
-            margin: "auto",
-          }}
+          className={`${Classes.DRAWER_FOOTER} drawer-footer`}
         >
           {useBigButton ? (
-            <>
-              <div
-                style={{
-                  width: "100%",
-                  padding: "10px 20px 0px 20px",
-                }}
-              >
+            <div className="footer-big-button-layout">
+              <div className="footer-progress-wrapper-big">
                 <ProgressView
                   percentage={lastProgress}
                   status={lastRunStatus}
                 />
               </div>
-              <div
-                style={{
-                  width: "100%",
-                  padding: "10px 20px",
-                  display: "flex",
-                  justifyContent: "center",
-                }}
-              >
-                <div style={{ width: "100%" }}>
+              <div className="footer-button-wrapper">
+                <div className="footer-button-full-width">
                   <StartStopButton
                     testing_status={lastRunStatus}
                     useBigButton={true}
@@ -955,31 +943,16 @@ function App({ syncDocumentId }: { syncDocumentId: string }): JSX.Element {
                   />
                 </div>
               </div>
-            </>
+            </div>
           ) : (
-            <div
-              style={{
-                width: "100%",
-                display: "flex",
-                flexDirection: "row",
-              }}
-            >
-              <div
-                style={{
-                  flexDirection: "column",
-                  flexGrow: 1,
-                  flexShrink: 1,
-                  marginTop: "auto",
-                  marginBottom: "auto",
-                  padding: "20px",
-                }}
-              >
+            <div className="footer-small-button-layout">
+              <div className="footer-progress-wrapper-small">
                 <ProgressView
                   percentage={lastProgress}
                   status={lastRunStatus}
                 />
               </div>
-              <div style={{ flexDirection: "column" }}>
+              <div className="footer-button-column">
                 <StartStopButton
                   testing_status={lastRunStatus}
                   useBigButton={false}
