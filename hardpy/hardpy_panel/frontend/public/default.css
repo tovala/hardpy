@@ -1,4 +1,15 @@
-/* HardPy Default CSS - Can be overridden with custom.css in your test directory */
+/* HardPy Default CSS
+
+   This file provides default styling for the HardPy UI.
+
+   To customize: Create a custom.css file in your test directory.
+   The custom.css will be loaded AFTER this file, allowing you to
+   override any styles defined here. Both stylesheets are loaded together.
+
+   Example:
+   - default.css provides: .navbar-main { background: #d6d9e0; }
+   - custom.css overrides:  .navbar-main { background: #2c3e50 !important; }
+*/
 
 /* ========================================
    Layout & Spacing
@@ -103,13 +114,14 @@
   padding-bottom: 80px;
 }
 
-.footer-big-button-layout {
+/* Simplified footer layout */
+.footer-layout {
   width: 100%;
   display: flex;
   flex-direction: column;
 }
 
-.footer-progress-wrapper-big {
+.footer-progress-wrapper {
   width: 100%;
   padding: 10px 20px 0px 20px;
 }
@@ -121,27 +133,8 @@
   justify-content: center;
 }
 
-.footer-button-full-width {
+.footer-button {
   width: 100%;
-}
-
-.footer-small-button-layout {
-  width: 100%;
-  display: flex;
-  flex-direction: row;
-}
-
-.footer-progress-wrapper-small {
-  flex-direction: column;
-  flex-grow: 1;
-  flex-shrink: 1;
-  margin-top: auto;
-  margin-bottom: auto;
-  padding: 20px;
-}
-
-.footer-button-column {
-  flex-direction: column;
 }
 
 /* ========================================

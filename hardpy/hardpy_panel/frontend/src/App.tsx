@@ -214,41 +214,39 @@ function App({ syncDocumentId }: { syncDocumentId: string }): JSX.Element {
   let [selectedTests, setSelectedTests] = React.useState<string[]>([]);
 
   /**
-   * Loads custom CSS or falls back to default CSS
-   * Tries to fetch custom.css from the test directory via API
-   * Falls back to default.css if custom CSS is not available
+   * Loads default CSS and overlays custom CSS if available
+   * Default CSS is always loaded first, then custom.css (if exists) overlays on top
    */
   React.useEffect(() => {
     const loadCSS = async () => {
+      // Always load default CSS first
+      const defaultLinkElement = document.createElement("link");
+      defaultLinkElement.rel = "stylesheet";
+      defaultLinkElement.href = "/default.css";
+      defaultLinkElement.id = "hardpy-default-css";
+      document.head.appendChild(defaultLinkElement);
+      console.log("Loaded default.css");
+
+      // Try to load custom CSS as an overlay
       try {
-        // Try to fetch custom CSS from the API
         const response = await fetch("/api/custom_css");
 
         if (response.ok && response.headers.get("content-type")?.includes("text/css")) {
           const customCSS = await response.text();
 
-          // Only use custom CSS if it's not empty
+          // Only load custom CSS if it's not empty
           if (customCSS && customCSS.trim().length > 0) {
-            const linkElement = document.createElement("link");
-            linkElement.rel = "stylesheet";
-            linkElement.href = "/api/custom_css";
-            linkElement.id = "hardpy-custom-css";
-            document.head.appendChild(linkElement);
-            console.log("Loaded custom.css");
-            return;
+            const customLinkElement = document.createElement("link");
+            customLinkElement.rel = "stylesheet";
+            customLinkElement.href = "/api/custom_css";
+            customLinkElement.id = "hardpy-custom-css";
+            document.head.appendChild(customLinkElement);
+            console.log("Loaded custom.css overlay");
           }
         }
       } catch (error) {
-        console.log("Custom CSS not available, using default.css");
+        console.log("No custom.css found, using default styles only");
       }
-
-      // Fall back to default CSS
-      const linkElement = document.createElement("link");
-      linkElement.rel = "stylesheet";
-      linkElement.href = "/default.css";
-      linkElement.id = "hardpy-default-css";
-      document.head.appendChild(linkElement);
-      console.log("Loaded default.css");
     };
 
     loadCSS();
@@ -921,49 +919,31 @@ function App({ syncDocumentId }: { syncDocumentId: string }): JSX.Element {
       </div>
 
       {/* Footer with progress bar and control buttons */}
-      {isConfigLoaded && (
-        <div
-          className={`${Classes.DRAWER_FOOTER} drawer-footer`}
-        >
-          {useBigButton ? (
-            <div className="footer-big-button-layout">
-              <div className="footer-progress-wrapper-big">
-                <ProgressView
-                  percentage={lastProgress}
-                  status={lastRunStatus}
-                />
-              </div>
-              <div className="footer-button-wrapper">
-                <div className="footer-button-full-width">
-                  <StartStopButton
-                    testing_status={lastRunStatus}
-                    useBigButton={true}
-                    manualCollectMode={manualCollectMode}
-                    onTestRunStart={handleTestRunStart}
-                  />
-                </div>
-              </div>
+      {
+      <div
+        className={`${Classes.DRAWER_FOOTER} drawer-footer`}
+      >
+        <div className="footer-layout">
+          <div className="footer-progress-wrapper">
+            <ProgressView
+              percentage={lastProgress}
+              status={lastRunStatus}
+            />
+          </div>
+          <div className="footer-button-wrapper">
+            <div className="footer-button">
+              <StartStopButton
+                testing_status={lastRunStatus}
+                useBigButton={true}
+                manualCollectMode={manualCollectMode}
+                onTestRunStart={handleTestRunStart}
+              />
             </div>
-          ) : (
-            <div className="footer-small-button-layout">
-              <div className="footer-progress-wrapper-small">
-                <ProgressView
-                  percentage={lastProgress}
-                  status={lastRunStatus}
-                />
-              </div>
-              <div className="footer-button-column">
-                <StartStopButton
-                  testing_status={lastRunStatus}
-                  useBigButton={false}
-                  manualCollectMode={manualCollectMode}
-                  onTestRunStart={handleTestRunStart}
-                />
-              </div>
-            </div>
-          )}
+          </div>
         </div>
-      )}
+
+      </div>
+      }
 
       {/* Test Config Selection Overlay */}
       {appConfig && (
