@@ -31,6 +31,9 @@ jobs:
           sys.exit(f"Not on a tag")
 
         gitversion = '${{ github.ref_name }}'
+        # Strip 'v' prefix if present
+        if gitversion.startswith('v'):
+            gitversion = gitversion[1:]
         version = "unknown"
 
         pyproject_toml_file = Path(__file__).parent / "pyproject.toml"
