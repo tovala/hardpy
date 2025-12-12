@@ -7,8 +7,9 @@ on:
       - main
 
 jobs:
-  docs: 
+  docs:
     name: Build MkDocs
+    if: github.repository == 'everypinio/hardpy'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

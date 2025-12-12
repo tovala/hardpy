@@ -8,6 +8,7 @@ on:
 jobs:
   git-tag-check:
     name: Git Tag Check
+    if: github.repository == 'everypinio/hardpy'
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
