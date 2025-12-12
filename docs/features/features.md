@@ -44,6 +44,81 @@ The example of file:
 language = "zh"
 ```
 
+### Full-size start/stop button
+
+**HardPy** provides a full-size start/stop button layout option for improved usability across different devices and use cases.
+
+**Configuration**:
+Enable the full-size button in your `hardpy.toml`:
+
+```toml
+[frontend]
+full_size_button = true
+```
+
+### Test completion modal results
+
+**HardPy** provides configurable modal result windows that display test completion status with detailed information:
+
+- **PASS results**: Green modal with auto-dismiss functionality
+- **FAIL results**: Red modal showing detailed failed test cases list
+- **STOP results**: Yellow modal displaying stopped test case information
+
+**Configuration Options** in `hardpy.toml`:
+```toml
+[frontend.modal_result]
+enable = true
+auto_dismiss_pass = true
+auto_dismiss_timeout = 5
+```
+
+**Features**:
+
+- **Auto-dismiss**: PASS results automatically close after configurable timeout.
+- **Manual dismissal**: Click anywhere or press any key to close modal.
+- **Detailed reporting**: Failed test cases show module names, case names, and assertion messages.
+- **Keyboard integration**: Space key handling respects modal visibility states.
+- **Responsive design**: Adapts to different screen sizes with optimal readability.
+
+### Sound notifications
+
+**HardPy** provides configurable sound notifications for test completion events.
+Users can enable audio feedback when tests reach completion status (PASS/FAIL/STOP).
+
+**Configuration**:
+Enable sound notifications in your `hardpy.toml`:
+
+```toml
+[frontend]
+sound_on = true
+```
+
+### Manual test selection
+
+**HardPy** supports manual test selection, allowing operators to choose specific test cases
+to run instead of executing the entire test plan.
+
+**Key capabilities**:
+
+- **Checkbox-based selection**: Each test case and module displays checkboxes for selection
+- **Bulk operations**: Select or deselect all tests in a module with a single checkbox
+- **Visual feedback**: Selected tests are marked for execution, non-selected tests are skipped
+
+**Workflow**:
+
+1. Enable manual collect mode in settings menu
+2. Select desired tests using checkboxes
+3. Disable manual collect mode
+4. Start test execution - only selected tests will run
+
+**Configuration**:
+Enable manual test selection in your `hardpy.toml`:
+
+```toml
+[frontend]
+manual_collect = true
+```
+
 ## CLI
 
 ### Creating template project
@@ -361,9 +436,35 @@ An example of its use can be found on page [StandCloud reader](./../examples/sta
 
 ### Measurement
 
-**HardPy** allows users to save their measurement data to a database.
-The [set_case_measurement](./../documentation/pytest_hardpy.md#set_case_measurement) 
+**HardPy** allows users to save their measurement data to a database and display it in the operator panel.
+The [set_case_measurement](./../documentation/pytest_hardpy.md#set_case_measurement)
 function allows each individual test case to store measurements as a list.
+
+**Display format in operator panel:**
+
+- **Name Value Unit** - for measurements with all components (e.g., "Voltage 12.3 V")
+- **Value Unit** - for measurements without names (e.g., "5°", "98.6%", "45″")  
+- **Name Value** - for measurements without units (e.g., "Banana 15")
+
+**Special formatting for units:**
+
+- Symbols `%`, `°`, `′`, `″` are displayed without space (e.g., "23.5°C", "98.6%")
+- Other units are displayed with space (e.g., "12.3 V", "3.14 rad")
+
+**Configuration:**
+Enable measurement display in your `hardpy.toml`:
+
+```toml
+[frontend]
+measurement_display = true
+```
+
+**Features:**
+
+- Support for both numeric and string measurements
+- Clean, minimal tag-based display
+- Proper handling of special units (°, %, etc.)
+
 An example of its use can be found on page [measurement](./../examples/measurement.md).
 
 ### Chart
@@ -373,7 +474,20 @@ The [set_case_chart](./../documentation/pytest_hardpy.md#set_case_chart)
 function allows each individual test case to store a single chart.
 An example of its use can be found on page [chart](./../examples/chart.md).
 
-### Running some instance in single stand
+### Multiple HardPy instances in a single stand
 
 A user can run multiple **HardPy** instances on a single stand.
+To create a document in the database for storing test data, each stand that 
+runs on a single computer must have a unique combination of 
+[frontend](./../documentation/hardpy_config.md#frontend) host and port.
 The startup is described in the [Multiple Stand](./../examples/multiple_stands.md) example.
+
+### Multiple test plan configurations
+
+**HardPy** allows the user to define and manage multiple test configurations within a single project. 
+This feature enables flexible test execution, allowing different sets of tests or 
+variations of the same tests to be run by simply selecting a configuration.
+This is achieved by defining different `pytest.ini` files for each configuration and referencing 
+them in the main `hardpy.toml` file. 
+
+An example of its use can be found on page [Multiple configs](./../examples/multiple_configs.md).

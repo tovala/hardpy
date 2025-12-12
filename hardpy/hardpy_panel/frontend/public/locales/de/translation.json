@@ -11,23 +11,41 @@
       "connection": "Verbindung wird hergestellt... 🧐🔎",
       "dbError": "Datenbankverbindungsfehler. 🙅🏽‍♀️🚫",
       "noEntries": "Keine Einträge in der Datenbank 🙅🏽‍♀️🚫",
+      "stoppedTestCase": "Angehaltener Testfall",
+      "failedTestCases": "Fehlgeschlagene Testfälle",
+      "modalResultDismissHint": "Klicken Sie irgendwo oder drücken Sie eine Taste, um zu schließen",
+      "modalResultAutoDismissHint": "Automatisches Schließen in {{seconds}} Sekunden...",
+      "manualCollectOn": "Manuelle Sammlung ein",
+      "manualCollectOff": "Manuelle Sammlung aus",
+      "testConfigurationSelector": "Testkonfiguration auswählen",
       "status": {
-        "ready": "bereit",
-        "run": "läuft",
-        "passed": "bestanden",
-        "failed": "fehlgeschlagen",
-        "stopped": "gestoppt",
-        "unknown": "unbekannt"
+        "ready": "Bereit",
+        "run": "Läuft",
+        "passed": "Bestanden",
+        "failed": "Fehlgeschlagen",
+        "stopped": "Gestoppt",
+        "unknown": "Unbekannt"
       }
   },
   "button": {
     "start": "Starten",
     "stop": "Stoppen",
-    "confirm": "Bestätigen"
+    "confirm": "Bestätigen",
+    "pass": "Bestanden",
+    "fail": "Fehlgeschlagen"
   },
   "error": {
     "dbConnectionTitle": "Datenbankverbindungsfehler",
     "dbConnectionMessage": "Verbindung zur Datenbank konnte nicht hergestellt werden"
+  },
+  "chart": {
+    "dataChart": "Diagrammdaten",
+    "xAxis": "X-Achse",
+    "yAxis": "Y-Achse",
+    "chart": "Diagramm",
+    "showChart": "Diagramm anzeigen {{title}}",
+    "fullscreenButton": "Diagramm im Vollbildmodus öffnen",
+    "series": "Reihe {{number}}"
   },
   "operatorDialog": {
     "defaultTitle": "Nachricht",
@@ -57,6 +75,13 @@
     "nameColumn": "Name",
     "dataColumn": "Daten",
     "loading": "Wird geladen...",
-    "stubName": "Testgruppe"
+    "stubName": "Testgruppe",
+    "runSelectedTests": "{{count}} ausgewählte Tests ausführen",
+    "noTestsSelected": "Keine Tests ausgewählt",
+    "testsStarted": "{{count}} Tests gestartet",
+    "startError": "Fehler beim Starten der Tests",
+    "connectionError": "Verbindungsfehler",
+    "selectionColumn": "Auswählen",
+    "skipped": "Übersprungen"
   }
 }

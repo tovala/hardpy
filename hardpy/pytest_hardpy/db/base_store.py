@@ -1,22 +1,31 @@
 # Copyright (c) 2024 Everypin
 # GNU General Public License v3.0 (see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt)
 
+from json import dumps
 from logging import getLogger
 from typing import Any
 
 from glom import assign, glom
-from pycouchdb.exceptions import Conflict, NotFound
+from pycouchdb import Server as DbServer
+from pycouchdb.client import Database
+from pycouchdb.exceptions import Conflict, GenericError, NotFound
 from pydantic._internal._model_construction import ModelMetaclass
+from requests.exceptions import ConnectionError  # noqa: A004
 
-from hardpy.pytest_hardpy.db.base_connector import BaseConnector
+from hardpy.common.config import ConfigManager
 from hardpy.pytest_hardpy.db.const import DatabaseField as DF  # noqa: N817
 
 
-class BaseStore(BaseConnector):
+class BaseStore:
     """HardPy base storage interface for CouchDB."""
 
     def __init__(self, db_name: str) -> None:
-        super().__init__(db_name)
+        config_manager = ConfigManager()
+        config = config_manager.config
+        self._db_srv = DbServer(config.database.url)
+        self._db_name = db_name
+        self._db = self._init_db()
+        self._doc_id = config.database.doc_id
         self._log = getLogger(__name__)
         self._doc: dict = self._init_doc()
         self._schema: ModelMetaclass
@@ -47,6 +56,11 @@ class BaseStore(BaseConnector):
             key (str): document key
             value: document value
         """
+        try:
+            dumps(value)
+        except Exception:  # noqa: BLE001
+            # serialize non-serializable objects as string
+            value = dumps(value, default=str)
         if "." in key:
             assign(self._doc, key, value)
         else:
@@ -82,6 +96,19 @@ class BaseStore(BaseConnector):
         except (Conflict, NotFound):
             self._log.debug("Database will be created for the first time")
         self._doc: dict = self._init_doc()
+
+    def _init_db(self) -> Database:
+        try:
+            return self._db_srv.create(self._db_name)  # type: ignore
+        except Conflict:
+            # database is already created
+            return self._db_srv.database(self._db_name)
+        except GenericError as exc:
+            msg = f"Error initializing database {exc}"
+            raise RuntimeError(msg) from exc
+        except ConnectionError as exc:
+            msg = f"Error initializing database: {exc}"
+            raise RuntimeError(msg) from exc
 
     def _init_doc(self) -> dict:
         try:

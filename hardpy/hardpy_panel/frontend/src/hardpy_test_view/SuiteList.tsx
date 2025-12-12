@@ -7,7 +7,7 @@ import { H1, H2, H4, Tag, Divider } from "@blueprintjs/core";
 import { withTranslation, WithTranslation } from "react-i18next";
 
 import { TestItem, TestSuiteComponent } from "./TestSuite";
-import StartOperatorMsgDialog from "./OperatorMsg";
+import { StartOperatorMsgDialog, CLOSED_MESSAGES_KEY } from "./OperatorMsg";
 
 /**
  * Set of suites
@@ -62,13 +62,6 @@ interface OperatorMsgProps {
   id?: string;
   font_size?: number;
   html?: HTMLInfo;
-  pass_fail?: boolean;
-}
-
-interface NavStatus {
-  name: string;
-  value: string | boolean;
-  display: boolean;
 }
 
 export interface TestRunI {
@@ -85,7 +78,6 @@ export interface TestRunI {
   artifact?: Record<string, unknown>;
   operator_msg?: OperatorMsgProps;
   alert?: string;
-  nav_status?: Record<string, NavStatus>;
 }
 
 /**
@@ -94,11 +86,12 @@ export interface TestRunI {
 interface Props extends WithTranslation {
   db_state: TestRunI;
   defaultClose: boolean;
+  onTestsSelectionChange?: (selectedTests: string[]) => void;
+  selectedTests?: string[];
+  selectionSupported?: boolean;
+  measurementDisplay?: boolean;
+  manualCollectMode?: boolean; 
   currentTestConfig?: string;
-}
-
-interface State {
-  initialized: boolean;
 }
 
 const SECONDS_TO_MILLISECONDS = 1000;
@@ -106,14 +99,19 @@ const SECONDS_TO_MILLISECONDS = 1000;
 /**
  * Render a list of suites with tests inside
  */
-export class SuiteList extends React.Component<Props, State> {
+export class SuiteList extends React.Component<
+  Props,
+  { initialized: boolean }
+> {
   elements_count: number = 0;
+  previousTestName: string | undefined;
 
   constructor(props: Props) {
     super(props);
     this.state = {
       initialized: props.i18n?.isInitialized ?? false,
     };
+    this.previousTestName = props.db_state.name;
   }
 
   componentDidMount() {
@@ -123,13 +121,25 @@ export class SuiteList extends React.Component<Props, State> {
       });
     }
   }
+
+  componentDidUpdate(prevProps: Props) {
+    if (prevProps.db_state.name !== this.props.db_state.name) {
+      try {
+        localStorage.removeItem(CLOSED_MESSAGES_KEY);
+        console.log("Cleared closed messages for new test run");
+      } catch (error) {
+        console.error("Error clearing closed messages:", error);
+      }
+      this.previousTestName = this.props.db_state.name;
+    }
+  }
+
   /**
    * Renders the SuiteList component.
    * @returns {React.ReactElement} The rendered component.
    */
   render(): React.ReactElement {
     const { t, i18n } = this.props;
-    console.log("SuiteList props", { i18n: this.props.i18n });
     if (!i18n || !this.state.initialized) {
       return <div>Loading translations...</div>;
     }
@@ -166,7 +176,7 @@ export class SuiteList extends React.Component<Props, State> {
     return (
       <>
         <div>
-          <H1>{this.props.currentTestConfig || db_state.name}</H1>
+          <H1>{db_state.name}</H1>
           {db_state.test_stand && (
             <Tag minimal style={TAG_ELEMENT_STYLE}>
               {t("suiteList.standName")}: {db_state.test_stand?.name}
@@ -235,7 +245,6 @@ export class SuiteList extends React.Component<Props, State> {
                 }
                 html_width={this.props.db_state.operator_msg?.html?.width}
                 html_border={this.props.db_state.operator_msg?.html?.border}
-                pass_fail={this.props.db_state.operator_msg?.pass_fail}
               />
             )}
         </div>
@@ -257,6 +266,12 @@ export class SuiteList extends React.Component<Props, State> {
         test={suite.test}
         defaultOpen={this.elements_count < 5 && !this.props.defaultClose}
         commonTestRunStatus={this.props.db_state.status}
+        moduleTechName={suite.name}
+        onTestsSelectionChange={this.props.onTestsSelectionChange}
+        selectedTests={this.props.selectedTests}
+        selectionSupported={this.props.selectionSupported}
+        measurementDisplay={this.props.measurementDisplay}
+        manualCollectMode={this.props.manualCollectMode} 
       />
     );
   }

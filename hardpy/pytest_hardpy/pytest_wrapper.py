@@ -11,7 +11,6 @@ from platform import system
 from hardpy.common.config import ConfigManager
 from hardpy.pytest_hardpy.db import DatabaseField as DF  # noqa: N817
 from hardpy.pytest_hardpy.reporter import RunnerReporter
-from hardpy.pytest_hardpy.utils.connection_data import ConnectionData
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -22,40 +21,41 @@ class PyTestWrapper:
 
     def __init__(self) -> None:
         self._proc = None
-        self.config = ConfigManager().get_config()
-        database_config = self.config.database
-        ConnectionData().database_url = f"http://{database_config.user}:{database_config.password}@{database_config.host}:{database_config.port}/"
         self._reporter = RunnerReporter()
         self.python_executable = sys.executable
 
-        #Check to see if there are any test configs defined in the TOML file
+        # Make sure test structure is stored in DB
+        # before clients come in
+        self._config_manager = ConfigManager()
+        self.config = self._config_manager.config
+
+        # Check to see if there are any test configs defined in the TOML file
         if not self.config.test_configs:
-            logger.info(
-                "No test configurations defined in the HardPy configuration. "
-                "Loading from tests directory.",
-            )
             self.collect(is_clear_database=True)
         else:
-            self.clear_database()
+            self._reporter.clear_database()
             # Check if there's a current test config selected in statestore
-            try:
-                current_config_name = self.config.current_test_config
-                if current_config_name != "":
-                    self.collect(
-                        is_clear_database=True, test_config=current_config_name,
-                    )
-                else:
-                    logger.info("No existing test config selection found.")
+            config_name = self.config.current_test_config
+            if config_name:
+                try:
+                    self.collect(is_clear_database=True)
+                except Exception:
+                    # No existing test configs in statestore, will be initialized later
+                    msg = "Error retrieving current test config from statestore."
+                    logger.exception(msg)
+            else:
+                logger.info("No existing test config selection found.")
 
-            except Exception:
-                # No existing test configs in statestore, will be initialized later
-                logger.exception(
-                    "Error retrieving current test config from statestore.",
-                    )
-
-
-    def start(self, start_args: dict | None = None) -> bool:
+    def start(
+        self,
+        start_args: dict | None = None,
+        selected_tests: list[str] | None = None,
+    ) -> bool:
         """Start pytest subprocess.
+
+        Args:
+            start_args: Additional start arguments
+            selected_tests: List of selected tests
 
         Returns:
             bool: True if pytest was started
@@ -71,24 +71,25 @@ class PyTestWrapper:
             "-m",
             "pytest",
             "--hardpy-db-url",
-            self.config.database.connection_url(),
+            self.config.database.url,
             "--hardpy-tests-name",
-            self.config.tests_name,
+            self._tests_name(),
             "--sc-address",
             self.config.stand_cloud.address,
         ]
 
-        test_config_file = ConfigManager().get_test_config_file(
-            self.config.current_test_config,
-        )
-        if test_config_file is not None:
-            logging.info("Using test configuration file: %s", test_config_file)
-            cmd.extend(["--config-file", test_config_file])
+        if selected_tests:
+            selected_test_cases = self._select_test_cases(selected_tests)
+            cmd.extend(selected_test_cases)
 
+        self._add_config_file(cmd)
 
         if self.config.stand_cloud.connection_only:
             cmd.append("--sc-connection-only")
+        if self.config.stand_cloud.autosync:
+            cmd.append("--sc-autosync")
         cmd.append("--hardpy-pt")
+
         if start_args:
             for key, value in start_args.items():
                 arg_str = f"{key}={value}"
@@ -97,13 +98,13 @@ class PyTestWrapper:
         if system() == "Windows":
             self._proc = subprocess.Popen(  # noqa: S603
                 cmd,
-                cwd=ConfigManager().get_tests_path(),
+                cwd=self._config_manager.tests_path,
                 creationflags=subprocess.CREATE_NEW_PROCESS_GROUP,
             )
-        if system() == "Linux":
+        else:
             self._proc = subprocess.Popen(  # noqa: S603
                 cmd,
-                cwd=ConfigManager().get_tests_path(),
+                cwd=self._config_manager.tests_path,
             )
 
         return True
@@ -115,22 +116,25 @@ class PyTestWrapper:
             bool: True if pytest was running and stopped
         """
         if self.is_running() and self._proc:
-            if system() == "Linux":
-                self._proc.terminate()
-            elif system() == "Windows":
+            if system() == "Windows":
                 self._proc.send_signal(signal.CTRL_BREAK_EVENT)  # type: ignore
+            else:
+                self._proc.terminate()
             return True
         return False
 
     def collect(
-        self, *, is_clear_database: bool = False, test_config: str | None = None,
+        self,
+        *,
+        is_clear_database: bool = False,
+        selected_tests: list[str] | None = None,
     ) -> bool:
         """Perform pytest collection.
 
         Args:
             is_clear_database (bool): indicates whether database
                                       should be cleared. Defaults to False.
-            test_config (str | None): test configuration name. Defaults to None.
+            selected_tests (list[str]): list of selected tests
 
         Returns:
             bool: True if collection was started
@@ -146,24 +150,24 @@ class PyTestWrapper:
             "pytest",
             "--collect-only",
             "--hardpy-db-url",
-            self.config.database.connection_url(),
+            self.config.database.url,
             "--hardpy-tests-name",
-            self.config.tests_name,
+            self._tests_name(),
             "--hardpy-pt",
         ]
 
         if is_clear_database:
             args.append("--hardpy-clear-database")
 
-        if test_config:
-            test_config_file = ConfigManager().get_test_config_file(test_config)
-            if test_config_file is not None:
-                logging.info("Using test configuration file: %s", test_config_file)
-                args.extend(["--config-file", test_config_file])
+        self._add_config_file(args)
+
+        if selected_tests:
+            selected_test_cases = self._select_test_cases(selected_tests)
+            args.extend(selected_test_cases)
 
         subprocess.Popen(  # noqa: S603
             [self.python_executable, *args],
-            cwd=ConfigManager().get_tests_path(),
+            cwd=self._config_manager.tests_path,
         )
         return True
 
@@ -200,13 +204,43 @@ class PyTestWrapper:
         Returns:
             dict: HardPy configuration
         """
-        return ConfigManager().get_config().model_dump()
+        config_manager = ConfigManager()
+        return config_manager.config.model_dump()
 
-    def clear_database(self) -> None:
-        """Clear both statestore and runstore databases directly."""
-        try:
-            self._reporter._statestore.clear()  # noqa: SLF001
-            self._reporter._runstore.clear()  # noqa: SLF001
-            logging.info("Database cleared successfully")
-        except Exception:
-            logging.exception("Failed to clear database")
+    def _tests_name(self) -> str:
+        manual_str = ""
+        if self.config.frontend.manual_collect:
+            manual_str = " Manual mode"
+
+        tests_name = (
+            self.config.tests_name + f" {self.config.current_test_config}"
+            if self.config.current_test_config
+            else self.config.tests_name
+        )
+        return tests_name + manual_str
+
+    def _add_config_file(self, cmd: list) -> None:
+        """Add test configuration file if specified."""
+        config_name = self.config.current_test_config
+        test_config_file = None
+
+        if self.config.test_configs:
+            for config in self.config.test_configs:
+                if config.name == config_name:
+                    test_config_file = config.file
+                    break
+
+        if test_config_file:
+            logging.info(f"Using test configuration file: {test_config_file}")
+            cmd.extend(["--config-file", test_config_file])
+
+    def _select_test_cases(self, selected_tests: list[str]) -> list[str]:
+        test_cases = []
+        for test_path in selected_tests:
+            if "::" in test_path:
+                module_name, case_name = test_path.split("::", 1)
+                case_path = f"{module_name}.py::{case_name}"
+                test_cases.append(case_path)
+            else:
+                test_cases.append(f"{test_path}.py")
+        return test_cases

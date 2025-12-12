@@ -11,23 +11,41 @@
       "connection": "Établissement de la connexion... 🧐🔎",
       "dbError": "Erreur de connexion à la base de données. 🙅🏽‍♀️🚫",
       "noEntries": "Aucune entrée dans la base de données 🙅🏽‍♀️🚫",
+      "stoppedTestCase": "Cas de test arrêté",
+      "failedTestCases": "Cas de test échoués",
+      "modalResultDismissHint": "Cliquez n'importe où ou appuyez sur n'importe quelle touche pour fermer",
+      "modalResultAutoDismissHint": "Fermeture automatique dans {{seconds}} secondes...",
+      "manualCollectOn": "Collecte manuelle activée",
+      "manualCollectOff": "Collecte manuelle désactivée",
+      "testConfigurationSelector": "Sélectionner la configuration de test",
       "status": {
-        "ready": "prêt",
-        "run": "en cours",
-        "passed": "réussi",
-        "failed": "échoué",
-        "stopped": "arrêté",
-        "unknown": "inconnu"
+        "ready": "Prêt",
+        "run": "En cours",
+        "passed": "Réussi",
+        "failed": "Échoué",
+        "stopped": "Arrêté",
+        "unknown": "Inconnu"
       }
   },
   "button": {
     "start": "Commencer",
     "stop": "Arrêter",
-    "confirm": "Confirmer"
+    "confirm": "Confirmer",
+    "pass": "Réussi",
+    "fail": "Échoué"
   },
   "error": {
     "dbConnectionTitle": "Erreur de connexion à la base de données",
     "dbConnectionMessage": "Échec de la connexion à la base de données"
+  },
+  "chart": {
+    "dataChart": "Données du graphique",
+    "xAxis": "Axe X",
+    "yAxis": "Axe Y",
+    "chart": "Graphique",
+    "showChart": "Afficher le graphique {{title}}",
+    "fullscreenButton": "Ouvrir le graphique en plein écran",
+    "series": "Série {{number}}"
   },
   "operatorDialog": {
     "defaultTitle": "Message",
@@ -57,6 +75,13 @@
     "nameColumn": "Nom",
     "dataColumn": "Données",
     "loading": "Chargement...",
-    "stubName": "Suite de tests"
+    "stubName": "Suite de tests",
+    "runSelectedTests": "Exécuter {{count}} tests sélectionnés",
+    "noTestsSelected": "Aucun test sélectionné",
+    "testsStarted": "{{count}} tests démarrés",
+    "startError": "Erreur de démarrage des tests",
+    "connectionError": "Erreur de connexion",
+    "selectionColumn": "Sélectionner",
+    "skipped": "Ignoré"
   }
 }

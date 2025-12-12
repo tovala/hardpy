@@ -1,6 +1,10 @@
 import pytest
 
-from hardpy import DialogBox, ImageComponent, run_dialog_box
+from hardpy import (
+    DialogBox,
+    ImageComponent,
+    run_dialog_box,
+)
 
 pytestmark = pytest.mark.module_name("Base dialog box")
 
@@ -19,7 +23,6 @@ def test_base_dialog_box():
     response = run_dialog_box(dbx)
     assert response
 
-
 @pytest.mark.case_name("Base dialog box with image")
 def test_base_dialog_box_with_image():
     dbx = DialogBox(
@@ -31,27 +34,29 @@ def test_base_dialog_box_with_image():
     assert response
 
 
-@pytest.mark.case_name("Pass/Fail dialog box example")
-def test_pass_fail_dialog_box():
-    """Test case demonstrating pass/fail dialog box functionality."""
+@pytest.mark.case_name("Base dialog box with pass_fail")
+def test_base_dialog_box_with_pass_fail():
     dbx = DialogBox(
-        title_bar="Manual Verification Required",
-        dialog_text="Please check the test result manually.\n\nIs the LED blinking correctly?\n\nClick PASS if yes, FAIL if no.",
+        title_bar="Operator check",
+        dialog_text="Press Pass or Fail button",
         pass_fail=True,
     )
-    result = run_dialog_box(dbx)
-    
-    # The result will be True for PASS, False for FAIL
-    # For demonstration purposes, we'll accept both outcomes
-    if result:
-        print("✅ Test PASSED - User clicked PASS")
-        assert True
-    else:
-        print("❌ Test FAILED - User clicked FAIL")
-        # In a real test, you might want to fail here:
-        # assert False, "User indicated test failed"
-        # But for this example, we'll just log it
-        assert True  # Accept both outcomes for demo
+    response = run_dialog_box(dbx)
+    assert response.result
+    assert response.data
+
+
+@pytest.mark.case_name("Base dialog box with image and pass_fail")
+def test_base_dialog_box_with_image_and_pass_fail():
+    dbx = DialogBox(
+        title_bar="Operator check",
+        dialog_text="Press Pass or Fail button",
+        image=ImageComponent(address="assets/test.png", width=100),
+        pass_fail=True,
+    )
+    response = run_dialog_box(dbx)
+    assert response.result
+    assert response.data
 
 
 @pytest.mark.case_name("Empty test after")

@@ -5,6 +5,9 @@ the result to CouchDB and writing a simple driver.
 The code for this example can be seen inside the hardpy package
 [Minute parity](https://github.com/everypinio/hardpy/tree/main/examples/minute_parity).
 
+This example includes the results of the [test completion modal](./../features/features.md#test-completion-modal-results), 
+[sound notifications](./../features/features.md#sound-notifications) and 
+[manual test selection](./../features/features.md#manual-test-selection) features.
 
 ### how to start
 
@@ -12,6 +15,36 @@ The code for this example can be seen inside the hardpy package
 2. Launch [CouchDB instance](../documentation/database.md#couchdb-instance).
 3. Modify the files described below.
 4. Launch `hardpy run minute_parity`.
+
+### hardpy.toml
+
+Replace the settings in the `[frontend]` and `[frontend.modal_result]` sections 
+with those shown in the **hardpy.toml** example file below.
+
+```toml
+title = "HardPy TOML config"
+tests_name = "Minute Parity"
+
+[database]
+user = "dev"
+password = "dev"
+host = "localhost"
+port = 5984
+
+[frontend]
+host = "localhost"
+port = 8000
+language = "en"
+full_size_button = false
+sound_on = true
+measurement_display = true
+manual_collect = true
+
+[frontend.modal_result]
+enable = true
+auto_dismiss_pass = true
+auto_dismiss_timeout = 5
+```
 
 ### conftest.py
 
@@ -101,6 +134,7 @@ def test_batch_info():
 def test_dut_info():
     serial_number = str(uuid4())[:6]
     hardpy.set_dut_serial_number(serial_number)
+    hardpy.set_message(f"Serial number: {serial_number}")
     hardpy.set_dut_part_number("part_number_1")
     hardpy.set_dut_name("Test Device")
     hardpy.set_dut_type("PCBA")
@@ -156,7 +190,6 @@ pytestmark = pytest.mark.module_name("Main tests")
 @pytest.mark.case_name("Minute check")
 def test_minute_parity(driver_example: DriverExample):
     minute = driver_example.current_minute
-    hardpy.set_message(f"Current minute {minute}")
     result = minute % 2
     hardpy.set_case_measurement(hardpy.NumericMeasurement(value=minute, name="Current minute"))
     error_code = 1

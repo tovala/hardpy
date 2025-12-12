@@ -20,8 +20,7 @@ class HookReporter(BaseReporter):
     def __init__(self, is_clear_database: bool = False) -> None:
         super().__init__()
         if is_clear_database:
-            self._statestore.clear()
-            self._runstore.clear()
+            self.clear_database()
         self._log = getLogger(__name__)
 
     def init_doc(self, doc_name: str) -> None:
@@ -233,6 +232,15 @@ class HookReporter(BaseReporter):
         key = self.generate_key(DF.MODULES, module_id, DF.START_TIME)
         return self._statestore.get_field(key)
 
+    def get_module_stop_time(self, module_id: str) -> int:
+        """Get module stop time.
+
+        Returns:
+            int: module time
+        """
+        key = self.generate_key(DF.MODULES, module_id, DF.STOP_TIME)
+        return self._statestore.get_field(key)
+
     def get_case_start_time(self, module_id: str, case_id: str) -> int:
         """Get case start time.
 
@@ -240,6 +248,15 @@ class HookReporter(BaseReporter):
             int: module time
         """
         key = self.generate_key(DF.MODULES, module_id, DF.CASES, case_id, DF.START_TIME)
+        return self._statestore.get_field(key)
+
+    def get_case_stop_time(self, module_id: str, case_id: str) -> int:
+        """Get case stop time.
+
+        Returns:
+            int: module time
+        """
+        key = self.generate_key(DF.MODULES, module_id, DF.CASES, case_id, DF.STOP_TIME)
         return self._statestore.get_field(key)
 
     def set_caused_dut_failure_id(self, module_id: str, case_id: str) -> None:

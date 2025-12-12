@@ -14,7 +14,8 @@ HardPy allows you to:
 
 * Create test benches for devices using [pytest](https://docs.pytest.org/);
 * Use a browser to view, start, stop, and interact with tests;
-* Store test results in the [CouchDB](https://couchdb.apache.org/) database.
+* Store test results in the [CouchDB](https://couchdb.apache.org/) database;
+* Store test results on the [StandCloud](https://standcloud.io/) analytics platform.
 
 <h1 align="center">
     <img src="https://raw.githubusercontent.com/everypinio/hardpy/main/docs/img/hardpy_panel.gif" alt="hardpy panel" style="width:600;">
@@ -54,9 +55,22 @@ hardpy run
   </h1>
 5. View the latest test report: http://localhost:5984/_utils
 
-    Login and password: **dev**, database - **runstore** , document - **current**.
+    Login and password: **dev**, database - **runstore**.
 
   <h1 align="center">
       <img src="https://raw.githubusercontent.com/everypinio/hardpy/main/docs/img/runstore_hello_hardpy.png"
       alt="hardpy runstore" style="width:500px;">
   </h1>
+
+## Measurement instruments
+
+**HardPy** does not contain any drivers for interacting with measuring equipment. 
+However, **HardPy** allows you to work with any Python code, meaning you can use 
+open libraries to interact with measuring equipment.
+
+* [InstrumentKit](https://github.com/instrumentkit/InstrumentKit)
+* [Instrumental](https://github.com/mabuchilab/Instrumental)
+* [PyMeasure](https://github.com/pymeasure/pymeasure)
+* [PyTango](https://gitlab.com/tango-controls/pytango)
+* [QCoDeS](https://github.com/microsoft/Qcodes)
+* [QCoDeS contrib drivers](https://github.com/QCoDeS/Qcodes_contrib_drivers) 

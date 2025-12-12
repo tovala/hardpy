@@ -7,7 +7,9 @@ from pathlib import Path
 
 import tomli
 import tomli_w
-from pydantic import BaseModel, ConfigDict, ValidationError
+from pydantic import BaseModel, ConfigDict, Field, ValidationError
+
+from hardpy.common.singleton import SingletonMeta
 
 logger = getLogger(__name__)
 
@@ -21,8 +23,14 @@ class DatabaseConfig(BaseModel):
     password: str = "dev"
     host: str = "localhost"
     port: int = 5984
+    doc_id: str = Field(exclude=True, default="")
+    url: str = Field(exclude=True, default="")
 
-    def connection_url(self) -> str:
+    def model_post_init(self, __context) -> None:  # noqa: ANN001,PYI063
+        """Get database connection url."""
+        self.url = self.get_url()
+
+    def get_url(self) -> str:
         """Get database connection url.
 
         Returns:
@@ -39,9 +47,23 @@ class FrontendConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     host: str = "localhost"
-    url: str = "localhost"
     port: int = 8000
     language: str = "en"
+    full_size_button: bool = False
+    sound_on: bool = False
+    manual_collect: bool = False
+    measurement_display: bool = True
+    modal_result: ModalResultConfig = Field(default_factory=lambda: ModalResultConfig())
+
+
+class ModalResultConfig(BaseModel):
+    """Modal result configuration."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    enable: bool = False
+    auto_dismiss_pass: bool = True
+    auto_dismiss_timeout: int = 5
 
 
 class StandCloudConfig(BaseModel):
@@ -49,8 +71,11 @@ class StandCloudConfig(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    address: str = ""
+    address: str = "standcloud.io"
     connection_only: bool = False
+    autosync: bool = False
+    autosync_timeout: int = 30  # 30 minutes
+    api_key: str = ""
 
 
 class TestConfig(BaseModel):
@@ -83,20 +108,44 @@ class HardpyConfig(BaseModel, extra="allow"):
     frontend: FrontendConfig = FrontendConfig()
     stand_cloud: StandCloudConfig = StandCloudConfig()
     current_test_config: str = ""
-    test_configs: list[TestConfig] | None = None
-    sound_on: bool = False
-    enable_test_pass_fail_modal: bool = False
+    test_configs: list[TestConfig] = []
+
+    def model_post_init(self, __context) -> None:  # noqa: ANN001,PYI063
+        """Get database document name."""
+        self.database.doc_id = self.get_doc_id()
+
+    def get_doc_id(self) -> str:
+        """Update database document name."""
+        return f"{self.frontend.host}_{self.frontend.port}"
 
 
-class ConfigManager:
+class ConfigManager(metaclass=SingletonMeta):
     """HardPy configuration manager."""
 
-    obj = HardpyConfig()
-    tests_path = Path.cwd()
+    def __init__(self) -> None:
+        self._config = HardpyConfig()
+        self._tests_path = Path.cwd()
 
-    @classmethod
+    @property
+    def config(self) -> HardpyConfig:
+        """Get HardPy configuration.
+
+        Returns:
+            HardpyConfig: HardPy configuration
+        """
+        return self._config
+
+    @property
+    def tests_path(self) -> Path:
+        """Get tests path.
+
+        Returns:
+            Path: HardPy tests path
+        """
+        return self._tests_path
+
     def init_config(  # noqa: PLR0913
-        cls,
+        self,
         tests_name: str,
         database_user: str,
         database_password: str,
@@ -105,10 +154,14 @@ class ConfigManager:
         frontend_host: str,
         frontend_port: int,
         frontend_language: str,
-        sc_address: str = "",
-        sc_connection_only: bool = False,
+        sc_address: str,
+        sc_connection_only: bool,
+        sc_autosync: bool,
+        sc_api_key: str,
     ) -> None:
-        """Initialize HardPy configuration.
+        """Initialize the HardPy configuration.
+
+        Only call once to create a configuration.
 
         Args:
             tests_name (str): Tests suite name.
@@ -121,52 +174,36 @@ class ConfigManager:
             frontend_language (str): Operator panel language.
             sc_address (str): StandCloud address.
             sc_connection_only (bool): StandCloud check availability.
+            sc_autosync (bool): StandCloud auto syncronization.
+            sc_api_key (str): StandCloud API key.
         """
-        cls.obj.tests_name = tests_name
-        cls.obj.database.user = database_user
-        cls.obj.database.password = database_password
-        cls.obj.database.host = database_host
-        cls.obj.database.port = database_port
-        cls.obj.frontend.host = frontend_host
-        cls.obj.frontend.port = frontend_port
-        cls.obj.frontend.language = frontend_language
-        cls.obj.stand_cloud.address = sc_address
-        cls.obj.stand_cloud.connection_only = sc_connection_only
+        self._config.tests_name = tests_name
+        self._config.frontend.host = frontend_host
+        self._config.frontend.port = frontend_port
+        self._config.frontend.language = frontend_language
+        self._config.database.user = database_user
+        self._config.database.password = database_password
+        self._config.database.host = database_host
+        self._config.database.port = database_port
+        self._config.database.doc_id = self._config.get_doc_id()
+        self._config.database.url = self._config.database.get_url()
+        self._config.stand_cloud.address = sc_address
+        self._config.stand_cloud.connection_only = sc_connection_only
+        self._config.stand_cloud.autosync = sc_autosync
+        self._config.stand_cloud.api_key = sc_api_key
 
-    @classmethod
-    def create_config(cls, parent_dir: Path) -> None:
+    def create_config(self, parent_dir: Path) -> None:
         """Create HardPy configuration.
 
         Args:
             parent_dir (Path): Configuration file parent directory.
         """
-        if not cls.obj.stand_cloud.address:
-            del cls.obj.stand_cloud
-        if not cls.obj.tests_name:
-            del cls.obj.tests_name
-
-        # Get the model dump and exclude None values for TOML compatibility
-        config_dict = cls.obj.model_dump(exclude_none=True)
-
-        # Clean nested None values that exclude_none=True might miss
-        config_dict = cls._clean_none_values(config_dict)
-        config_str = tomli_w.dumps(config_dict)
+        # test_config is filled in by the user as an array
+        config_str = tomli_w.dumps(self._config.model_dump(exclude="test_configs"))
         with Path.open(parent_dir / "hardpy.toml", "w") as file:
             file.write(config_str)
 
-    @classmethod
-    def _clean_none_values(cls, obj: any) -> any:
-        """Recursively remove None values from nested dictionaries and lists."""
-        if isinstance(obj, dict):
-            return {
-                k: cls._clean_none_values(v) for k, v in obj.items() if v is not None
-}
-        if isinstance(obj, list):
-            return [cls._clean_none_values(item) for item in obj if item is not None]
-        return obj
-
-    @classmethod
-    def read_config(cls, toml_path: Path) -> HardpyConfig | None:
+    def read_config(self, toml_path: Path) -> HardpyConfig | None:
         """Read HardPy configuration.
 
         Args:
@@ -175,10 +212,10 @@ class ConfigManager:
         Returns:
             HardpyConfig | None: HardPy configuration
         """
-        cls.tests_path = toml_path
+        self._tests_path = toml_path
         toml_file = toml_path / "hardpy.toml"
         if not toml_file.exists():
-            logger.error("File hardpy.toml not found at path: %s", toml_file)
+            # TODO (xorialexandrov): Add a log that cannot cause tests to fail
             return None
         try:
             with Path.open(toml_path / "hardpy.toml", "rb") as f:
@@ -189,79 +226,28 @@ class ConfigManager:
             return None
 
         try:
-            cls.obj = HardpyConfig(**toml_data)
+            self._config = HardpyConfig(**toml_data)
         except ValidationError:
             logger.exception("Error parsing TOML")
             return None
-        return cls.obj
+        return self._config
 
-    @classmethod
-    def get_config(cls) -> HardpyConfig:
-        """Get HardPy configuration.
-
-        Returns:
-            HardpyConfig: HardPy configuration
-        """
-        return cls.obj
-
-    @classmethod
-    def get_tests_path(cls) -> Path:
-        """Get tests path.
-
-        Returns:
-            Path: HardPy tests path
-        """
-        return cls.tests_path
-
-    @classmethod
-    def get_test_configs(cls) -> TestConfigs:
-        """Get test configurations for statestore.
-
-        Returns:
-            TestConfigs: Test configurations with current and available
-        """
-        available_configs = [config.name for config in cls.obj.test_configs]
-
-        return TestConfigs(
-            available = available_configs,
-        )
-
-    @classmethod
-    def set_current_test_config(cls, config_name: str) -> None:
+    def set_current_test_config(self, config_name: str) -> None:
         """Set current test configuration.
 
         Args:
             config_name (str): Test configuration name
         """
-        available_configs = [config.name for config in cls.obj.test_configs]
+        if self._config.test_configs == []:
+            logger.warning("No test configurations available.")
+            return
+
+        available_configs = [config.name for config in self._config.test_configs]
         if config_name in available_configs:
-            cls.obj.current_test_config = config_name
+            self._config.current_test_config = config_name
         else:
-            logger.warning("Test configuration '%s' \
-                           not found among available configurations.", config_name)
-
-    @classmethod
-    def get_current_test_config(cls) -> str:
-        """Get current test configuration.
-
-        Returns:
-            str: Current test configuration name
-        """
-        return cls.obj.current_test_config
-
-    @classmethod
-    def get_test_config_file(cls, config_name: str) -> str | None:
-        """Get test configuration file by name.
-
-        Args:
-            config_name (str): Test configuration name
-
-        Returns:
-            str | None: Test configuration file or None if not found
-        """
-        if cls.obj.test_configs is None:
-            return None
-        for config in cls.obj.test_configs:
-            if config.name == config_name:
-                return config.file
-        return None
+            msg = (
+                f"Test configuration {config_name} not ",
+                "found among available configurations.",
+            )
+            logger.warning(msg)

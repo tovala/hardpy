@@ -28,7 +28,7 @@ if __debug__:
     disable_warnings(InsecureRequestWarning)
 
 cli = typer.Typer(add_completion=False)
-default_config = ConfigManager().get_config()
+default_config = HardpyConfig()
 
 
 @cli.command()
@@ -67,12 +67,20 @@ def init(  # noqa: PLR0913
         help="Specify a frontend port.",
     ),
     sc_address: str = typer.Option(
-        default="",
+        default=default_config.stand_cloud.address,
         help="Specify a StandCloud address.",
     ),
     sc_connection_only: bool = typer.Option(
-        default=False,
+        default=default_config.stand_cloud.connection_only,
         help="Check StandCloud service availability before start.",
+    ),
+    sc_autosync: bool = typer.Option(
+        default=default_config.stand_cloud.autosync,
+        help="Enable StandCloud auto syncronization.",
+    ),
+    sc_api_key: str | None = typer.Option(
+        default=default_config.stand_cloud.api_key,
+        help="Specify a StandCloud API key.",
     ),
 ) -> None:
     """Initialize HardPy tests directory.
@@ -90,9 +98,12 @@ def init(  # noqa: PLR0913
         frontend_language (str): Panel operator language
         sc_address (str): StandCloud address
         sc_connection_only (bool): Flag to check StandCloud service availability
+        sc_autosync (bool): Flag to enable StandCloud auto syncronization
+        sc_api_key (str | None): StandCloud API key
     """
     dir_path = Path(Path.cwd() / tests_dir if tests_dir else "tests")
-    ConfigManager().init_config(
+    config_manager = ConfigManager()
+    config_manager.init_config(
         tests_name=tests_name if tests_name else dir_path.name,
         database_user=database_user,
         database_password=database_password,
@@ -103,6 +114,8 @@ def init(  # noqa: PLR0913
         frontend_language=default_config.frontend.language,
         sc_address=sc_address,
         sc_connection_only=sc_connection_only,
+        sc_autosync=sc_autosync,
+        sc_api_key=sc_api_key,
     )
     # create tests directory
     Path.mkdir(dir_path, exist_ok=True, parents=True)
@@ -112,7 +125,7 @@ def init(  # noqa: PLR0913
         Path.mkdir(dir_path / "database", exist_ok=True, parents=True)
 
     # create hardpy.toml
-    ConfigManager().create_config(dir_path)
+    config_manager.create_config(dir_path)
 
     config = _get_config(dir_path)
     template = TemplateGenerator(config)
@@ -141,6 +154,7 @@ def run(tests_dir: Annotated[Optional[str], typer.Argument()] = None) -> None:
         tests_dir (Optional[str]): Test directory. Current directory by default
     """
     config = _get_config(tests_dir)
+    _validate_config(config)
 
     print("\nLaunch the HardPy operator panel...")
 
@@ -151,12 +165,16 @@ def run(tests_dir: Annotated[Optional[str], typer.Argument()] = None) -> None:
 
     print(f"http://{config.frontend.host}:{config.frontend.port}\n")
 
-    uvicorn_run(
-        "hardpy.hardpy_panel.api:app",
-        host=config.frontend.host,
-        port=config.frontend.port,
-        log_level="critical",
-    )
+    try:
+        uvicorn_run(
+            "hardpy.hardpy_panel.api:app",
+            host=config.frontend.host,
+            port=config.frontend.port,
+            log_level="critical",
+        )
+    except RuntimeError as exc:
+        print(f"HardPy server cannot be started: {exc}")
+        sys.exit()
 
 
 @cli.command()
@@ -258,21 +276,46 @@ def sc_logout(address: Annotated[str, typer.Argument()]) -> None:
         print(f"HardPy logout failed from {address}")
 
 
+@cli.command()
+def sc_sync(
+    tests_dir: Annotated[Optional[str], typer.Argument()] = None,
+    timeout: int = typer.Option(
+        default="60",
+        help="Specify a synchronization timeout.",
+    ),
+) -> str:
+    """Synchronize HardPy tests with StandCloud.
+
+    Args:
+        tests_dir (Optional[str]): Test directory. Current directory by default
+        timeout (int): Synchronization timeout
+    """
+    try:
+        _timeout = int(timeout)
+    except ValueError:
+        print("Timeout must be a number.")
+        sys.exit()
+    config = _get_config(tests_dir, validate=True)
+    url = f"http://{config.frontend.host}:{config.frontend.port}/api/stand_cloud_sync"
+    return _request_hardpy(url, timeout=_timeout)
+
+
 def _get_config(tests_dir: str | None = None, validate: bool = False) -> HardpyConfig:
     dir_path = Path.cwd() / tests_dir if tests_dir else Path.cwd()
-    config = ConfigManager().read_config(dir_path)
+    config_manager = ConfigManager()
+    config = config_manager.read_config(dir_path)
 
     if not config:
         print(f"Config at path {dir_path} not found.")
         sys.exit()
 
     if validate:
-        _validate_config(config, dir_path)
+        _validate_running_config(config, dir_path)
 
     return config
 
 
-def _validate_config(config: HardpyConfig, tests_dir: str) -> None:
+def _validate_running_config(config: HardpyConfig, tests_dir: str) -> None:
     url = f"http://{config.frontend.host}:{config.frontend.port}/api/hardpy_config"
     error_msg = f"HardPy in directory {tests_dir} does not run."
     try:
@@ -286,19 +329,29 @@ def _validate_config(config: HardpyConfig, tests_dir: str) -> None:
         print(error_msg)
         sys.exit()
 
+def _validate_config(config: HardpyConfig) -> None:
+    if config.stand_cloud.autosync:
+        if config.stand_cloud.autosync_timeout < 1:
+            print("StandCloud autosync timeout must be greater than 0.")
+            sys.exit()
+        if not config.stand_cloud.api_key:
+            print("StandCloud API key is empty.")
+            sys.exit()
 
-def _request_hardpy(url: str) -> None:
+
+def _request_hardpy(url: str, timeout: int = 5) -> str:
     try:
-        response = requests.get(url, timeout=2)
+        response = requests.get(url, timeout=timeout)
     except Exception:
         print("HardPy operator panel is not running.")
         sys.exit()
     try:
         status: dict = response.json().get("status", "ERROR")
     except ValueError:
-        print(f"Hardpy internal error: {response}.")
+        print(f"HardPy internal error: {response}.")
         sys.exit()
     print(f"HardPy status: {status}.")
+    return status
 
 
 if __name__ == "__main__":

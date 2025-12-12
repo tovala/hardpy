@@ -1,21 +1,30 @@
 title = "HardPy TOML config"
 tests_name = "Hello HardPy"
-sound_on = false
-enable_test_pass_fail_modal = false
+current_test_config = ""
 
 [database]
 user = "dev"
 password = "dev"
-host = "100.90.173.76"
-port = 5984
-
-[database_frontend]
-user = "dev"
-password = "dev"
-host = "100.90.173.76"
+host = "localhost"
 port = 5984
 
 [frontend]
-host = "100.90.173.76"
+host = "localhost"
 port = 8000
 language = "en"
+full_size_button = false
+sound_on = false
+measurement_display = true
+manual_collect = false
+
+[frontend.modal_result]
+enable = false
+auto_dismiss_pass = true
+auto_dismiss_timeout = 5
+
+[stand_cloud]
+address = "standcloud.io"
+connection_only = false
+autosync = false
+autosync_timeout = 30
+api_key = ""

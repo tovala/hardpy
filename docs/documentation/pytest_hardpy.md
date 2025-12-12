@@ -67,13 +67,13 @@ When called again, the information will be added to DB.
 
 **Arguments:**
 
-- `info` *(dict)*: DUT info
+- `info` *(Mapping[str, str | int | float  | None])*: DUT info
 
 **Example:**
 
 ```python
 def test_dut_info():
-    set_dut_info({"batch": "test_batch", "board_rev": "rev_1"})
+    set_dut_info({"sw_version": "1.0.0"})
 ```
 
 #### set_dut_serial_number
@@ -229,11 +229,7 @@ When called again, the information will be merged with existing data.
 
 ```python
 def test_stand_info():
-    set_stand_info({
-        "calibration_date": "2023-01-15",
-        "temperature": 23.5,
-        "firmware_version": "2.1.4"
-    })
+    set_stand_info({"calibration_date": "2023-01-15"})
 ```
 
 #### set_stand_location
@@ -318,7 +314,9 @@ Accepts an [Instrument](#instrument) object containing all instrument details.
 **Instrument Parameters:**
 
 - `name` *(str | None)*: Instrument name
-- `revision` *(str | None)*: Instrument revision  
+- `revision` *(str | None)*: Instrument revision
+- `serial_number` *(str | None)* Instrument serial number
+- `part_number` *(str | None)*  Instrument part number
 - `number` *(int | None)*: Instrument number  
 - `comment` *(str | None)*: Instrument comment  
 - `info` *(Mapping[str, str | int | float ] | None)*: Additional instrument info 
@@ -330,6 +328,8 @@ def test_instruments():
     instrument = Instrument(
         name="Oscilloscope",
         revision="1.2",
+        serial_number="4235098",
+        part_number="E012",
         number=1,
         info={"model": "DSO-X 2024A", "bandwidth": "200MHz"}
     )
@@ -375,7 +375,7 @@ When called again, the information will be merged with existing data.
 
 **Arguments:**
 
-- `info` *(Mapping[str, str | int | float ])*: Process info dictionary
+- `info` *(Mapping[str, str | int | float | None])*: Process info dictionary
 
 **Example:**
 
@@ -394,7 +394,7 @@ When called again, the information will be added to case measurement list.
 
 **Arguments:**
 
-- `measurement` [NumericMeasurement](#numericmeasurement) | 
+- `measurement` [NumericMeasurement](#numericmeasurement) |
   [StringMeasurement](#stringmeasurement): measurement data.
 
 **Returns:**
@@ -405,20 +405,59 @@ When called again, the information will be added to case measurement list.
 
 ```python
 def test_measurement():
-    meas_1 = NumericMeasurement(value=10, operation=ComparisonOperation.EQ, comparison_value=10)
+    meas_1 = NumericMeasurement(
+        name="Voltage", 
+        value=12.3, 
+        unit="V",
+        operation=ComparisonOperation.GELE, 
+        lower_limit=10.0, 
+        upper_limit=15.0
+    )
     set_case_measurement(meas_1)
-    meas_2 = NumericMeasurement(value=3, unit="V", operation=ComparisonOperation.GTLT, lower_limit=2.9, upper_limit=3.5)
+    
+    meas_2 = NumericMeasurement(
+        value=5, 
+        unit="°", 
+        operation=ComparisonOperation.EQ, 
+        comparison_value=5
+    )
     set_case_measurement(meas_2)
-    meas_3 = NumericMeasurement(value=1.0)
+    
+    meas_3 = NumericMeasurement(
+        name="Count",
+        value=42
+    )
     set_case_measurement(meas_3)
+
+    meas_4 = StringMeasurement(
+        value="1.2.0", 
+        operation=ComparisonOperation.EQ, 
+        comparison_value="1.2.0"
+    )
+    set_case_measurement(meas_4)
+
+    meas_5 = StringMeasurement(
+        name="Version",
+        value="v2.1.0", 
+        operation=ComparisonOperation.EQ, 
+        comparison_value="v2.1.0"
+    )
+    set_case_measurement(meas_5)
 
     assert meas_1.result
     assert meas_2.result
-
-    meas_4 = StringMeasurement(value="1.2.0", operation=ComparisonOperation.EQ, comparison_value="1.2.0")
-    set_case_measurement(meas_4)
     assert meas_4.result
+    assert meas_5.result
 ```
+
+**Operator panel display:**
+The example above would display in the operator panel as:
+
+- `Voltage 12.3 V`
+- `5°`
+- `Count 42`
+- `1.2.0`
+- `Version v2.1.0`
 
 #### set_case_chart
 
@@ -1018,9 +1057,11 @@ It is used with the [set_instrument](#set_instrument) function.
 
 - `name` *(str | None)*: Instrument name  
 - `revision` *(str | None)*: Instrument revision  
+- `serial_number` *(str | None)*: Instrument serial number  
+- `part_number` *(str | None)*: Instrument part number  
 - `number` *(int | None)*: Instrument number  
 - `comment` *(str | None)*: Instrument comment  
-- `info` *(Mapping[str, str | int | float | None)*: Additional instrument info as key-value pairs  
+- `info` *(Mapping[str, str | int | float | None])*: Additional instrument info as key-value pairs  
 
 **Returns:**
 
@@ -1036,6 +1077,8 @@ It is used with the [set_instrument](#set_instrument) function.
 oscilloscope = Instrument(
     name="Oscilloscope",
     revision="1.2.3",
+    serial_number="1325",
+    part_number="EOSC_23",
     number=1,
     info={
         "model": "DSO-X 2024A",
@@ -1058,7 +1101,7 @@ It is used with the [set_dut_sub_unit](#set_dut_sub_unit) function.
 - `name` *(str | None)*: unit name  
 - `type` *(str | None)*: unit type
 - `revision` *(str | None)*: unit revision  
-- `info` *(Mapping[str, str | int | float ] | None)*: additional unit info as key-value pairs  
+- `info` *(Mapping[str, str | int | float  | None] | None)*: additional unit info as key-value pairs  
 
 **Example:**
 
@@ -1454,6 +1497,15 @@ The default is *False*.
 
 ```bash
 --sc-connection-only
+```
+
+#### sc-autosync
+
+Enable **HardPy** to **StandCloud** test report data auto synchroniztion.
+The default is *False*.
+
+```bash
+--sc-autosync
 ```
 
 #### hardpy-start-arg

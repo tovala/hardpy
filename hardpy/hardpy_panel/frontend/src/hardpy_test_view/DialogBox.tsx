@@ -106,6 +106,8 @@ interface TextInputComponentProps {
   handleKeyDown: (event: React.KeyboardEvent) => void;
   inputPlaceholder?: string;
   type: string;
+  passFail?: boolean;
+  onEnterPress?: () => void;
 }
 
 interface RadioButtonComponentProps {
@@ -114,6 +116,8 @@ interface RadioButtonComponentProps {
   setSelectedRadioButton: (value: string) => void;
   handleKeyDown: (event: React.KeyboardEvent) => void;
   fontSize: number;
+  passFail?: boolean;
+  onEnterPress?: () => void;
 }
 
 interface CheckboxComponentProps {
@@ -122,109 +126,161 @@ interface CheckboxComponentProps {
   setSelectedCheckboxes: (value: string[]) => void;
   handleKeyDown: (event: React.KeyboardEvent) => void;
   fontSize: number;
+  passFail?: boolean;
+  onEnterPress?: () => void;
 }
 
 /**
  * TextInputComponent is a reusable input component that allows users to enter text.
+ * When `pass_fail` is enabled and Enter is pressed, it prevents default submission
+ * and focuses the "Pass" button without triggering it.
+ *
  * @param {string} inputText - The current value of the input field.
  * @param {function} setInputText - A function to update the input field value.
  * @param {function} handleKeyDown - A function to handle keydown events on the input field.
  * @param {string} inputPlaceholder - The placeholder text to display in the input field.
  * @param {string} type - The type of the input field.
+ * @param {boolean} passFail - Whether pass/fail buttons are enabled.
+ * @param {function} onEnterPress - Callback to focus the "Pass" button (not trigger it).
  * @returns {JSX.Element} - A controlled input component with auto-focus enabled.
  */
-/** */
 const TextInputComponent = ({
   inputText,
   setInputText,
   handleKeyDown,
   inputPlaceholder,
   type,
-}: TextInputComponentProps): JSX.Element => (
-  <InputGroup
-    value={inputText}
-    onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-      setInputText(event.target.value)
+  passFail: pass_fail,
+  onEnterPress,
+}: TextInputComponentProps): JSX.Element => {
+  const handleKeyDownWithFocus = (event: React.KeyboardEvent) => {
+    if (pass_fail && event.key === "Enter") {
+      event.preventDefault(); // Prevent form submission or default behavior
+      onEnterPress?.(); // Only focus the "Pass" button, do NOT trigger it
+    } else {
+      handleKeyDown(event);
     }
-    onKeyDown={handleKeyDown}
-    placeholder={inputPlaceholder}
-    type={type}
-    autoFocus={true}
-  />
-);
+  };
+
+  return (
+    <InputGroup
+      value={inputText}
+      onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+        setInputText(event.target.value)
+      }
+      onKeyDown={handleKeyDownWithFocus}
+      placeholder={inputPlaceholder}
+      type={type}
+      autoFocus={true}
+    />
+  );
+};
 
 /**
- * RadioButtonComponent is a reusable component that renders a group of radio buttons.
+ * RadioButtonComponent renders a group of radio buttons.
+ * When `pass_fail` is enabled and Enter is pressed, it focuses the "Pass" button
+ * without submitting or selecting anything automatically.
+ *
  * @param {string[]} fields - An array of options to display as radio buttons.
  * @param {string} selectedRadioButton - The currently selected radio button value.
  * @param {function} setSelectedRadioButton - A function to update the selected radio button.
  * @param {function} handleKeyDown - A function to handle keydown events on the radio buttons.
  * @param {number} fontSize - The font size for the radio button labels.
+ * @param {boolean} passFail - Whether pass/fail mode is active.
+ * @param {function} onEnterPress - Callback to focus "Pass" button on Enter.
  * @returns {JSX.Element} - A group of radio buttons with dynamic styling and auto-focus on the first option.
  */
-/** */
 const RadioButtonComponent = ({
   fields,
   selectedRadioButton,
   setSelectedRadioButton,
   handleKeyDown,
   fontSize,
-}: RadioButtonComponentProps): JSX.Element => (
-  <>
-    {fields?.map((option: string) => (
-      <Radio
-        key={option}
-        label={option}
-        checked={selectedRadioButton === option}
-        onChange={() => setSelectedRadioButton(option)}
-        onKeyDown={handleKeyDown}
-        style={{ fontSize: `${fontSize}px` }}
-        autoFocus={option === fields[0]}
-      />
-    ))}
-  </>
-);
+  passFail: pass_fail,
+  onEnterPress,
+}: RadioButtonComponentProps): JSX.Element => {
+  const handleKeyDownWithFocus = (event: React.KeyboardEvent) => {
+    if (pass_fail && event.key === "Enter") {
+      event.preventDefault();
+      onEnterPress?.();
+    } else {
+      handleKeyDown(event);
+    }
+  };
+
+  return (
+    <>
+      {fields?.map((option: string) => (
+        <Radio
+          key={option}
+          label={option}
+          checked={selectedRadioButton === option}
+          onChange={() => setSelectedRadioButton(option)}
+          onKeyDown={handleKeyDownWithFocus}
+          style={{ fontSize: `${fontSize}px` }}
+          autoFocus={option === fields[0]}
+        />
+      ))}
+    </>
+  );
+};
 
 /**
  * CheckboxComponent is a reusable component that renders a group of checkboxes.
+ * When `pass_fail` is enabled and Enter is pressed, it focuses the "Pass" button
+ * without triggering any action.
  *
  * @param {string[]} fields - An array of options to display as checkboxes.
  * @param {string[]} selectedCheckboxes - An array of currently selected checkbox values.
  * @param {function} setSelectedCheckboxes - A function to update the selected checkboxes.
  * @param {function} handleKeyDown - A function to handle keydown events on the checkboxes.
  * @param {number} fontSize - The font size for the checkbox labels.
+ * @param {boolean} passFail - Whether pass/fail mode is active.
+ * @param {function} onEnterPress - Callback to focus "Pass" button on Enter.
  * @returns {JSX.Element} - A group of checkboxes with dynamic styling and auto-focus on the first option.
  */
-/** */
 const CheckboxComponent = ({
   fields,
   selectedCheckboxes,
   setSelectedCheckboxes,
   handleKeyDown,
   fontSize,
-}: CheckboxComponentProps): JSX.Element => (
-  <>
-    {fields?.map((option: string) => (
-      <Checkbox
-        key={option}
-        label={option}
-        checked={selectedCheckboxes.includes(option)}
-        autoFocus={option === fields[0]}
-        onKeyDown={handleKeyDown}
-        style={{ fontSize: `${fontSize}px` }}
-        onChange={() => {
-          if (selectedCheckboxes.includes(option)) {
-            setSelectedCheckboxes(
-              selectedCheckboxes.filter((item) => item !== option)
-            );
-          } else {
-            setSelectedCheckboxes([...selectedCheckboxes, option]);
-          }
-        }}
-      />
-    ))}
-  </>
-);
+  passFail: pass_fail,
+  onEnterPress,
+}: CheckboxComponentProps): JSX.Element => {
+  const handleKeyDownWithFocus = (event: React.KeyboardEvent) => {
+    if (pass_fail && event.key === "Enter") {
+      event.preventDefault();
+      onEnterPress?.();
+    } else {
+      handleKeyDown(event);
+    }
+  };
+
+  return (
+    <>
+      {fields?.map((option: string) => (
+        <Checkbox
+          key={option}
+          label={option}
+          checked={selectedCheckboxes.includes(option)}
+          autoFocus={option === fields[0]}
+          onKeyDown={handleKeyDownWithFocus}
+          style={{ fontSize: `${fontSize}px` }}
+          onChange={() => {
+            if (selectedCheckboxes.includes(option)) {
+              setSelectedCheckboxes(
+                selectedCheckboxes.filter((item) => item !== option)
+              );
+            } else {
+              setSelectedCheckboxes([...selectedCheckboxes, option]);
+            }
+          }}
+        />
+      ))}
+    </>
+  );
+};
 
 /**
  * Renders a text input component.
@@ -239,7 +295,8 @@ const renderTextInput = (
   inputText: string,
   setInputText: (value: string) => void,
   handleKeyDown: (event: React.KeyboardEvent) => void,
-  t: (key: string) => string
+  t: (key: string) => string,
+  onEnterPress?: () => void
 ): JSX.Element => (
   <TextInputComponent
     inputText={inputText}
@@ -247,6 +304,8 @@ const renderTextInput = (
     handleKeyDown={handleKeyDown}
     inputPlaceholder={t("operatorDialog.enterAnswer")}
     type="text"
+    passFail={props.pass_fail}
+    onEnterPress={onEnterPress}
   />
 );
 
@@ -263,7 +322,8 @@ const renderNumericInput = (
   inputText: string,
   setInputText: (value: string) => void,
   handleKeyDown: (event: React.KeyboardEvent) => void,
-  t: (key: string) => string
+  t: (key: string) => string,
+  onEnterPress?: () => void
 ): JSX.Element => (
   <TextInputComponent
     inputText={inputText}
@@ -271,6 +331,8 @@ const renderNumericInput = (
     handleKeyDown={handleKeyDown}
     inputPlaceholder={t("operatorDialog.enterAnswer")}
     type="number"
+    passFail={props.pass_fail}
+    onEnterPress={onEnterPress}
   />
 );
 
@@ -286,7 +348,8 @@ const renderRadioButton = (
   props: Props,
   selectedRadioButton: string,
   setSelectedRadioButton: (value: string) => void,
-  handleKeyDown: (event: React.KeyboardEvent) => void
+  handleKeyDown: (event: React.KeyboardEvent) => void,
+  onEnterPress?: () => void
 ): JSX.Element => (
   <RadioButtonComponent
     fields={props.widget_info?.fields ?? []}
@@ -294,6 +357,8 @@ const renderRadioButton = (
     setSelectedRadioButton={setSelectedRadioButton}
     handleKeyDown={handleKeyDown}
     fontSize={props.font_size ?? 12}
+    passFail={props.pass_fail}
+    onEnterPress={onEnterPress}
   />
 );
 
@@ -309,7 +374,8 @@ const renderCheckbox = (
   props: Props,
   selectedCheckboxes: string[],
   setSelectedCheckboxes: (value: string[]) => void,
-  handleKeyDown: (event: React.KeyboardEvent) => void
+  handleKeyDown: (event: React.KeyboardEvent) => void,
+  onEnterPress?: () => void
 ): JSX.Element => (
   <CheckboxComponent
     fields={props.widget_info?.fields ?? []}
@@ -317,6 +383,8 @@ const renderCheckbox = (
     setSelectedCheckboxes={setSelectedCheckboxes}
     handleKeyDown={handleKeyDown}
     fontSize={props.font_size ?? 12}
+    passFail={props.pass_fail}
+    onEnterPress={onEnterPress}
   />
 );
 
@@ -480,6 +548,10 @@ const renderMultistep = (
  * StartConfirmationDialog is a React component that renders a dialog box with various types of input widgets.
  * It supports text input, numeric input, radio buttons, checkboxes, and multi-step forms.
  *
+ * When `pass_fail` is enabled:
+ * - Pressing Enter in any input field will **focus the "Pass" button** but **will not trigger it**.
+ * - The operator must explicitly click "Pass" or "Fail".
+ *
  * @param {Props} props - The properties passed to the component.
  * @returns {JSX.Element} - The rendered dialog box.
  */
@@ -497,6 +569,7 @@ export function StartConfirmationDialog(props: Readonly<Props>): JSX.Element {
   );
   const [hasHTML, setHasHTML] = useState(false);
   const maxDimensions = useRef(BASE_DIALOG_DIMENSIONS);
+  const passButtonRef = useRef<HTMLButtonElement>(null);
 
   const widgetType = props.widget_type ?? WidgetType.Base;
   const maxSizeFactor =
@@ -506,6 +579,110 @@ export function StartConfirmationDialog(props: Readonly<Props>): JSX.Element {
     (LINE_HEIGHT_FACTOR *
       (props.font_size ? props.font_size : BASE_FONT_SIZE)) /
     BASE_FONT_SIZE;
+
+  const hasInputField = [
+    WidgetType.TextInput,
+    WidgetType.NumericInput,
+    WidgetType.RadioButton,
+    WidgetType.Checkbox,
+  ].includes(widgetType);
+
+  /**
+   * Focuses the "Pass" button without triggering its `onClick`.
+   */
+  const focusPassButton = () => {
+    if (passButtonRef.current) {
+      setTimeout(() => {
+        passButtonRef.current?.focus();
+      }, 1);
+    }
+  };
+
+  /**
+   * Encodes a URL component, replacing special characters with their hexadecimal equivalents.
+   *
+   * @param {string} str - The string to encode.
+   * @returns {string} - The encoded string.
+   */
+  const processEncodeURLComponent = (str: string): string => {
+    return encodeURIComponent(str).replace(
+      /[!-'()*+,/:;<=>?@[\]^`{|}~]/g,
+      function (c) {
+        return "%" + c.charCodeAt(0).toString(HEX_BASE);
+      }
+    );
+  };
+
+  /**
+   * Prepares widget data based on the current widget type and state.
+   *
+   * @returns {string} - The prepared widget data as a string.
+   */
+  const prepareWidgetData = (): string => {
+    let widgetData = "";
+
+    switch (widgetType) {
+      case WidgetType.TextInput:
+        widgetData = processEncodeURLComponent(inputText);
+        break;
+      case WidgetType.NumericInput:
+        widgetData = inputText;
+        break;
+      case WidgetType.RadioButton:
+        widgetData = processEncodeURLComponent(selectedRadioButton);
+        break;
+      case WidgetType.Checkbox:
+        widgetData = JSON.stringify(
+          selectedCheckboxes.map((checkboxValue) =>
+            processEncodeURLComponent(checkboxValue)
+          )
+        );
+        break;
+      default:
+        widgetData = "ok";
+        break;
+    }
+
+    return widgetData;
+  };
+
+  /**
+   * Validates input based on the current widget type.
+   *
+   * @returns {boolean} - True if input is valid, false otherwise.
+   */
+  const validateInput = (): boolean => {
+    if (props.widget_type) {
+      switch (props.widget_type) {
+        case WidgetType.TextInput:
+        case WidgetType.NumericInput:
+          if (
+            inputText.trim() === "" ||
+            inputText === "." ||
+            inputText === ".."
+          ) {
+            alert(t("operatorDialog.fieldNotEmpty"));
+            return false;
+          }
+          break;
+        case WidgetType.RadioButton:
+          if (selectedRadioButton === "") {
+            alert(t("operatorDialog.fieldNotEmpty"));
+            return false;
+          }
+          break;
+        case WidgetType.Checkbox:
+          if (selectedCheckboxes.length === 0) {
+            alert(t("operatorDialog.fieldNotEmpty"));
+            return false;
+          }
+          break;
+        default:
+          break;
+      }
+    }
+    return true;
+  };
 
   /**
    * Handles the close event of the dialog box.
@@ -537,16 +714,25 @@ export function StartConfirmationDialog(props: Readonly<Props>): JSX.Element {
    * @returns {Promise<void>}
    */
   const handlePassFail = async (passed: boolean): Promise<void> => {
+    // Validate input for widgets when using pass/fail
+    if (!validateInput()) {
+      return;
+    }
+
     setDialogOpen(false);
 
+    const widgetData = prepareWidgetData();
+
     try {
-      const result = passed ? "pass" : "fail";
-      const response = await axios.post(
-        `/api/confirm_dialog_box/${result}`
-      );
+      const result = passed ? "passed" : "failed";
+      // Send unified JSON payload structure
+      const response = await axios.post(`/api/confirm_dialog_box`, {
+        result: result,
+        data: widgetData,
+      });
       console.log(response.data);
     } catch (error) {
-      console.error("Error sending pass/fail response:", error);
+      console.error("Error sending dialog response:", error);
     }
   };
 
@@ -555,83 +741,24 @@ export function StartConfirmationDialog(props: Readonly<Props>): JSX.Element {
    * Validates the input and sends the confirmed data to the server.
    */
   const handleConfirm = async () => {
-    if (props.widget_type) {
-      switch (props.widget_type) {
-        case WidgetType.TextInput:
-        case WidgetType.NumericInput:
-          if (
-            inputText.trim() === "" ||
-            inputText === "." ||
-            inputText === ".."
-          ) {
-            alert(t("operatorDialog.fieldNotEmpty"));
-            return;
-          }
-          break;
-        case WidgetType.RadioButton:
-          if (selectedRadioButton === "") {
-            alert(t("operatorDialog.fieldNotEmpty"));
-            return;
-          }
-          break;
-        case WidgetType.Checkbox:
-          if (selectedCheckboxes.length === 0) {
-            alert(t("operatorDialog.fieldNotEmpty"));
-            return;
-          }
-          break;
-        default:
-          break;
-      }
+    if (!validateInput()) {
+      return;
     }
+
     setDialogOpen(false);
-    let textToSend = "";
 
-    /**
-     * Encodes a URL component, replacing special characters with their hexadecimal equivalents.
-     *
-     * @param {string} str - The string to encode.
-     * @returns {string} - The encoded string.
-     */
-    function processEncodeURLComponent(str: string): string {
-      return encodeURIComponent(str).replace(
-        /[!-'()*+,/:;<=>?@[\]^`{|}~]/g,
-        function (c) {
-          return "%" + c.charCodeAt(0).toString(HEX_BASE);
-        }
-      );
-    }
-
-    switch (props.widget_type) {
-      case WidgetType.TextInput:
-        textToSend = processEncodeURLComponent(inputText);
-        break;
-      case WidgetType.NumericInput:
-        textToSend = inputText;
-        break;
-      case WidgetType.RadioButton:
-        textToSend = processEncodeURLComponent(selectedRadioButton);
-        break;
-      case WidgetType.Checkbox:
-        textToSend = JSON.stringify(
-          selectedCheckboxes.map((checkboxValue) =>
-            processEncodeURLComponent(checkboxValue)
-          )
-        );
-        break;
-      default:
-        textToSend = "ok";
-        break;
-    }
+    const widgetData = prepareWidgetData();
 
     if (props.onConfirm) {
-      props.onConfirm(textToSend);
+      props.onConfirm(widgetData);
     }
 
     try {
-      const response = await axios.post(
-        `/api/confirm_dialog_box/${textToSend}`
-      );
+      // Send unified JSON payload structure
+      const response = await axios.post(`/api/confirm_dialog_box`, {
+        result: "confirm",
+        data: widgetData,
+      });
       console.log(response.data);
     } catch (error) {
       console.error("Error confirming dialog box:", error);
@@ -646,7 +773,8 @@ export function StartConfirmationDialog(props: Readonly<Props>): JSX.Element {
   const handleKeyDown = (event: React.KeyboardEvent) => {
     const key = event.key;
 
-    if (key === "Enter") {
+    // Only handle Enter for confirmation when pass_fail is NOT enabled
+    if (key === "Enter" && !props.pass_fail) {
       handleConfirm();
       return;
     }
@@ -817,8 +945,11 @@ export function StartConfirmationDialog(props: Readonly<Props>): JSX.Element {
   }, [props.language, i18n]);
 
   useEffect(() => {
-    console.log('Current language:', i18n.language);
-    console.log('All translations:', i18n.getResourceBundle(i18n.language, 'translation'));
+    console.log("Current language:", i18n.language);
+    console.log(
+      "All translations:",
+      i18n.getResourceBundle(i18n.language, "translation")
+    );
   }, [i18n]);
 
   useEffect(() => {
@@ -873,9 +1004,9 @@ export function StartConfirmationDialog(props: Readonly<Props>): JSX.Element {
       title={props.title_bar}
       icon="info-sign"
       isOpen={dialogOpen}
-      onClose={props.pass_fail ? undefined : handleClose}
+      onClose={handleClose}
       canOutsideClickClose={false}
-      canEscapeKeyClose={!props.pass_fail}
+      canEscapeKeyClose={true}
       style={{
         width:
           widgetType === WidgetType.Multistep ? `${dialogWidth}px` : "auto",
@@ -905,22 +1036,38 @@ export function StartConfirmationDialog(props: Readonly<Props>): JSX.Element {
           </p>
         ))}
         {widgetType === WidgetType.TextInput &&
-          renderTextInput(props, inputText, setInputText, handleKeyDown, t)}
+          renderTextInput(
+            props,
+            inputText,
+            setInputText,
+            handleKeyDown,
+            t,
+            focusPassButton
+          )}
         {widgetType === WidgetType.NumericInput &&
-          renderNumericInput(props, inputText, setInputText, handleKeyDown, t)}
+          renderNumericInput(
+            props,
+            inputText,
+            setInputText,
+            handleKeyDown,
+            t,
+            focusPassButton
+          )}
         {widgetType === WidgetType.RadioButton &&
           renderRadioButton(
             props,
             selectedRadioButton,
             setSelectedRadioButton,
-            handleKeyDown
+            handleKeyDown,
+            focusPassButton
           )}
         {widgetType === WidgetType.Checkbox &&
           renderCheckbox(
             props,
             selectedCheckboxes,
             setSelectedCheckboxes,
-            handleKeyDown
+            handleKeyDown,
+            focusPassButton
           )}
         {widgetType === WidgetType.Multistep &&
           renderMultistep(
@@ -992,29 +1139,31 @@ export function StartConfirmationDialog(props: Readonly<Props>): JSX.Element {
       </div>
       <div className={Classes.DIALOG_FOOTER}>
         {props.pass_fail ? (
-          <div style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              gap: "10px",
+            }}
+          >
             <Button
+              ref={passButtonRef}
               intent="success"
-              text={t('operatorDialog.pass')}
+              text={t("button.pass")}
               onClick={() => handlePassFail(true)}
-              large
-              style={{ 
-                height: "80px", 
-                minWidth: "120px",
-                fontSize: "16px",
-                fontWeight: "bold"
+              autoFocus={!hasInputField}
+              style={{
+                minWidth: "65px",
+                fontSize: "14px",
               }}
             />
             <Button
               intent="danger"
-              text={t('operatorDialog.fail')}
+              text={t("button.fail")}
               onClick={() => handlePassFail(false)}
-              large
-              style={{ 
-                height: "80px", 
-                minWidth: "120px",
-                fontSize: "16px",
-                fontWeight: "bold"
+              style={{
+                minWidth: "65px",
+                fontSize: "14px",
               }}
             />
           </div>
@@ -1026,6 +1175,9 @@ export function StartConfirmationDialog(props: Readonly<Props>): JSX.Element {
               widgetType === WidgetType.Base ||
               widgetType === WidgetType.Multistep
             }
+            style={{
+              minWidth: "65px",
+            }}
           >
             {t("button.confirm")}
           </Button>

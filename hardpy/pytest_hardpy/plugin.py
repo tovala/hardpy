@@ -1,4 +1,4 @@
-# Copyright (c) 2024 Everypin
+# Copyright (c) 2025 Everypin
 # GNU General Public License v3.0 (see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt)
 from __future__ import annotations
 
@@ -32,14 +32,13 @@ from pytest import (
     skip,
 )
 
+from hardpy.common.config import ConfigManager, HardpyConfig
 from hardpy.common.stand_cloud.connector import StandCloudConnector, StandCloudError
 from hardpy.pytest_hardpy.reporter import HookReporter
-from hardpy.pytest_hardpy.utils import (
-    ConnectionData,
-    NodeInfo,
-    ProgressCalculator,
-    TestStatus,
+from hardpy.pytest_hardpy.result.report_synchronizer.synchronizer import (
+    StandCloudSynchronizer,
 )
+from hardpy.pytest_hardpy.utils import NodeInfo, ProgressCalculator, TestStatus
 from hardpy.pytest_hardpy.utils.node_info import TestDependencyInfo
 
 if __debug__:
@@ -51,11 +50,11 @@ if __debug__:
 
 def pytest_addoption(parser: Parser) -> None:
     """Register argparse-style options."""
-    con_data = ConnectionData()
+    default_config = HardpyConfig()
     parser.addoption(
         "--hardpy-db-url",
         action="store",
-        default=con_data.database_url,
+        default=default_config.database.url,
         help="database url",
     )
     parser.addoption(
@@ -90,14 +89,20 @@ def pytest_addoption(parser: Parser) -> None:
     parser.addoption(
         "--sc-address",
         action="store",
-        default=con_data.sc_address,
+        default=default_config.stand_cloud.address,
         help="StandCloud address",
     )
     parser.addoption(
         "--sc-connection-only",
         action="store_true",
-        default=con_data.sc_connection_only,
+        default=default_config.stand_cloud.connection_only,
         help="check StandCloud availability",
+    )
+    parser.addoption(
+        "--sc-autosync",
+        action="store_true",
+        default=default_config.stand_cloud.autosync,
+        help="StandCloud auto syncronization",
     )
     parser.addoption(
         "--hardpy-start-arg",
@@ -133,22 +138,27 @@ class HardpyPlugin:
         self._tests_name: str = ""
         self._is_critical_not_passed = False
         self._start_args = {}
+        self._sc_syncronizer = StandCloudSynchronizer()
 
-        if system() == "Linux":
-            signal.signal(signal.SIGTERM, self._stop_handler)
-        elif system() == "Windows":
+        if system() == "Windows":
             signal.signal(signal.SIGBREAK, self._stop_handler)  # type: ignore
+        else:
+            signal.signal(signal.SIGTERM, self._stop_handler)
         self._log = getLogger(__name__)
 
     # Initialization hooks
 
     def pytest_configure(self, config: Config) -> None:
         """Configure pytest."""
-        con_data = ConnectionData()
+        config_manager = ConfigManager()
+        hardpy_config = config_manager.read_config(Path(config.rootpath))
+
+        if not hardpy_config:
+            hardpy_config = HardpyConfig()
 
         database_url = config.getoption("--hardpy-db-url")
         if database_url:
-            con_data.database_url = str(database_url)  # type: ignore
+            hardpy_config.database.url = str(database_url)  # type: ignore
 
         tests_name = config.getoption("--hardpy-tests-name")
         if tests_name:
@@ -160,11 +170,15 @@ class HardpyPlugin:
 
         sc_address = config.getoption("--sc-address")
         if sc_address:
-            con_data.sc_address = str(sc_address)  # type: ignore
+            hardpy_config.stand_cloud.address = str(sc_address)  # type: ignore
 
         sc_connection_only = config.getoption("--sc-connection-only")
         if sc_connection_only:
-            con_data.sc_connection_only = bool(sc_connection_only)  # type: ignore
+            hardpy_config.stand_cloud.connection_only = bool(sc_connection_only)  # type: ignore
+
+        sc_autosync = config.getoption("--sc-autosync")
+        if sc_autosync:
+            hardpy_config.stand_cloud.autosync = bool(sc_autosync)  # type: ignore
 
         _args = config.getoption("--hardpy-start-arg") or []
         if _args:
@@ -181,7 +195,7 @@ class HardpyPlugin:
         # must be init after config data is set
         try:
             self._reporter = HookReporter(bool(is_clear_database))
-        except RuntimeError as exc:
+        except Exception as exc:  # noqa: BLE001
             exit(str(exc), ExitCode.INTERNAL_ERROR)
 
     def pytest_sessionfinish(self, session: Session, exitstatus: int) -> None:
@@ -191,6 +205,7 @@ class HardpyPlugin:
         status = self._get_run_status(exitstatus)
         if status == TestStatus.STOPPED:
             self._stop_tests()
+        self._validate_stop_time()
         self._reporter.finish(status)
         self._reporter.update_db_by_doc()
         self._reporter.compact_all()
@@ -199,6 +214,11 @@ class HardpyPlugin:
         if self._post_run_functions:
             for action in self._post_run_functions:
                 action()
+
+        config_manager = ConfigManager()
+
+        if config_manager.config.stand_cloud.autosync:
+            self._send_report_to_sc()
 
     # Collection hooks
 
@@ -246,25 +266,35 @@ class HardpyPlugin:
 
     def pytest_runtestloop(self, session: Session) -> bool | None:
         """Call at the start of test run."""
-        self._progress.set_test_amount(session.testscollected)
+        try:
+            self._progress.set_test_amount(session.testscollected)
+        except ValueError:
+            msg = "No tests collected"
+            self._reporter.set_alert(msg)
+            self._reporter.update_db_by_doc()
+            exit(msg, ExitCode.NO_TESTS_COLLECTED)
         if session.config.option.collectonly:
             # ignore collect only mode
             return True
 
-        con_data = ConnectionData()
+        config_manager = ConfigManager()
 
         # running tests depends on a connection to StandCloud
-        if con_data.sc_connection_only:
+        if config_manager.config.stand_cloud.connection_only:
             try:
-                sc_connector = StandCloudConnector(addr=con_data.sc_address)
+                sc_connector = StandCloudConnector(
+                    addr=config_manager.config.stand_cloud.address,
+                    api_key=config_manager.config.stand_cloud.api_key,
+                )
             except StandCloudError as exc:
                 msg = str(exc)
                 self._reporter.set_alert(msg)
+                self._reporter.update_db_by_doc()
                 exit(msg, ExitCode.INTERNAL_ERROR)
             try:
                 sc_connector.healthcheck()
             except Exception:  # noqa: BLE001
-                addr = con_data.sc_address
+                addr = config_manager.config.stand_cloud.address
                 msg = (
                     f"StandCloud service at the address {addr} "
                     "not available or HardPy user is not authorized"
@@ -337,24 +367,28 @@ class HardpyPlugin:
             self._reporter.clear_case_data(module_id, case_id)
             self._reporter.update_db_by_doc()
 
+            # clear the error code if there were no failed tests before
+            if caused_dut_failure_id is None:
+                self._reporter.clear_error_code()
+
             try:
                 item.runtest()
                 call.excinfo = None
                 self._is_critical_not_passed = False
                 is_dut_failure = False
                 self._reporter.set_case_status(module_id, case_id, TestStatus.PASSED)
-                # clear the error code if there were no failed tests before
-                if caused_dut_failure_id is None:
-                    self._reporter.clear_error_code()
                 break
             except AssertionError:
                 self._reporter.set_case_status(module_id, case_id, TestStatus.FAILED)
                 is_dut_failure = True
                 if current_attempt == attempt:
                     break
-
         # set the caused dut failure id only the first time
-        if is_dut_failure and caused_dut_failure_id is None:
+        if (
+            is_dut_failure
+            and caused_dut_failure_id is None
+            and call.excinfo.typename != "Skipped"
+        ):
             self._reporter.set_caused_dut_failure_id(module_id, case_id)
 
     # Reporting hooks
@@ -450,6 +484,29 @@ class HardpyPlugin:
             case _:
                 return TestStatus.FAILED
 
+    def _validate_stop_time(self) -> None:
+        """Update module and case stop times if they are not set.
+
+        If module start time is set but module stop time is not set,
+        set module stop time to module start time.
+        If case start time is set but case stop time is not set, set
+        case stop time to case start time.
+        """
+        for module_id, module_data in self._results.items():
+            module_start_time = self._reporter.get_module_start_time(module_id)
+            module_stop_time = self._reporter.get_module_stop_time(module_id)
+            if module_start_time and not module_stop_time:
+                self._reporter.set_module_stop_time(module_start_time)
+            for module_data_key in module_data:
+                # skip module status
+                if module_data_key == "module_status":
+                    continue
+                case_id = module_data_key
+                case_start_time = self._reporter.get_case_start_time(module_id, case_id)
+                case_stop_time = self._reporter.get_case_stop_time(module_id, case_id)
+                if case_start_time and not case_stop_time:
+                    self._reporter.set_case_stop_time(case_start_time)
+
     def _stop_tests(self) -> None:
         """Update module and case statuses to stopped and skipped."""
         is_module_stopped = False
@@ -500,6 +557,19 @@ class HardpyPlugin:
         self._results[module_id][case_id] = case_status
         self._reporter.set_case_status(module_id, case_id, case_status)
         return is_case_stopped
+
+    def _send_report_to_sc(self) -> None:
+        """Send report to StandCloud."""
+        report = self._reporter.get_report()
+        if not report:
+            msg = "Empty report cannot be uploaded to StandCloud"
+            self._reporter.set_alert(msg)
+            return
+        if self._sc_syncronizer.push_to_sc(report):
+            return
+        if not self._sc_syncronizer.push_to_tempstore(report):
+            msg = "Report not uploaded to temporary storage"
+            self._reporter.set_alert(msg)
 
     def _decode_assertion_msg(
         self,
