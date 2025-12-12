@@ -201,10 +201,14 @@ type Props = {
  * @interface State
  * @property {boolean} isOpen - Whether the test suite is expanded
  * @property {number} dataColumnWidth - Current width of the data column
+ * @property {boolean} prevIsOpen - Previous isOpen state for tracking transitions
+ * @property {boolean} automaticallyOpened - Whether suite was auto-opened for running test
  */
 type State = {
   isOpen: boolean;
   dataColumnWidth: number;
+  prevIsOpen: boolean;
+  automaticallyOpened: boolean;
 };
 
 /**
@@ -257,6 +261,13 @@ export class TestSuite extends React.Component<Props, State> {
   private readonly dataColumnRef: React.RefObject<HTMLDivElement>;
 
   /**
+   * Reference to the container element for auto-scrolling
+   * @private
+   * @type {React.RefObject<HTMLDivElement>}
+   */
+  private readonly containerRef: React.RefObject<HTMLDivElement>;
+
+  /**
    * Resize observer for tracking data column width changes
    * @private
    * @type {ResizeObserver | null}
@@ -273,12 +284,15 @@ export class TestSuite extends React.Component<Props, State> {
     this.state = {
       isOpen: props.defaultOpen ?? false,
       dataColumnWidth: 0,
+      prevIsOpen: props.defaultOpen ?? false,
+      automaticallyOpened: false,
     };
 
     this.handleClick = this.handleClick.bind(this);
     this.handleTestSelection = this.handleTestSelection.bind(this);
     this.handleSelectAll = this.handleSelectAll.bind(this);
     this.dataColumnRef = React.createRef();
+    this.containerRef = React.createRef();
   }
 
   /**
@@ -349,7 +363,7 @@ export class TestSuite extends React.Component<Props, State> {
           className="test-suite-content"
         >
           {this.props.test.status != "busy" ? (
-            <div>{this.renderTests(this.props.test.cases)}</div>
+            <div ref={this.containerRef}>{this.renderTests(this.props.test.cases)}</div>
           ) : (
             <Spin indicator={TestSuite.LOADING_ICON} />
           )}
@@ -422,6 +436,44 @@ export class TestSuite extends React.Component<Props, State> {
 
     if (statusBecameReady || panelJustOpened) {
       this.updateDataColumnWidth();
+    }
+
+    // Auto-scroll functionality
+    if (this.props.test === prevProps.test) {
+      return;
+    }
+
+    const anyRunningOrFailed = Object.values(this.props.test.cases).some(
+      (test_case) => test_case.status === "run" || test_case.status === "failed"
+    );
+
+    if (anyRunningOrFailed && !this.state.isOpen && !this.state.automaticallyOpened) {
+      this.setState({ isOpen: true, prevIsOpen: this.state.isOpen, automaticallyOpened: true });
+      return;
+    }
+
+    if (!anyRunningOrFailed && this.state.isOpen && this.state.automaticallyOpened) {
+      this.setState({ isOpen: false, prevIsOpen: this.state.isOpen, automaticallyOpened: false });
+      return;
+    }
+
+    // Scroll to running test case
+    if (this.state.isOpen && anyRunningOrFailed) {
+      setTimeout(() => {
+        if (this.containerRef.current) {
+          const rows = this.containerRef.current.querySelectorAll('.rdt_TableRow');
+          const runningCases = Object.entries(this.props.test.cases).filter(
+            ([_, test_case]) => test_case.status === "run"
+          );
+
+          if (runningCases.length > 0) {
+            const runningCaseIndex = Object.keys(this.props.test.cases).indexOf(runningCases[0][0]);
+            if (runningCaseIndex !== -1 && rows[runningCaseIndex]) {
+              rows[runningCaseIndex].scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          }
+        }
+      }, 400);
     }
   }
 
