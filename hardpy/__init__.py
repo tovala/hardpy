@@ -4,8 +4,8 @@
 from hardpy.common.stand_cloud import StandCloudConnector, StandCloudError
 from hardpy.pytest_hardpy.pytest_call import (
     ErrorCode,
-    clear_operator_message,
     clear_nav_status,
+    clear_operator_message,
     get_current_attempt,
     get_current_report,
     run_dialog_box,
@@ -94,6 +94,7 @@ __all__ = [
     "SubUnit",
     "TestStandNumberError",
     "TextInputWidget",
+    "clear_nav_status",
     "clear_operator_message",
     "get_current_attempt",
     "get_current_report",
@@ -114,6 +115,7 @@ __all__ = [
     "set_instrument",
     "set_message",
     "set_module_artifact",
+    "set_nav_status",
     "set_operator_message",
     "set_process_info",
     "set_process_name",
@@ -125,6 +127,4 @@ __all__ = [
     "set_stand_number",
     "set_stand_revision",
     "set_user_name",
-    "set_nav_status",
-    "clear_nav_status",
 ]
