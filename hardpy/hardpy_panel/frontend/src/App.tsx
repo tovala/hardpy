@@ -32,6 +32,7 @@ import { useAllDocs } from "use-pouchdb";
 
 import "./App.css";
 import { isDialogOpen } from "./dialogueUtils";
+import { config } from "process";
 
 const WINDOW_WIDTH_THRESHOLDS = {
   ULTRAWIDE: 490,
@@ -207,6 +208,7 @@ function App(): JSX.Element {
 
   React.useEffect(() => {
     if (rows.length === 0) return;
+    console.log(rows);
 
     const db_row = rows[0].doc as TestRunI;
     const status = db_row.status || "";
@@ -501,6 +503,15 @@ function App(): JSX.Element {
             <Navbar.Heading>
               {t("app.duration")}: {lastRunDuration} {t("app.seconds")}
             </Navbar.Heading>
+
+            {hardpyConfig && hardpyConfig.version && (
+              <>
+                <Navbar.Divider />
+                <Navbar.Heading>
+                  {t("app.version")}: {hardpyConfig.version}
+                </Navbar.Heading>
+              </>
+            )}
           </div>
 
           <Navbar.Divider />

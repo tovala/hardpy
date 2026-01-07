@@ -85,6 +85,7 @@ class HardpyConfig(BaseModel, extra="allow"):
     test_configs: list[TestConfig] | None = None
     sound_on: bool = False
     enable_test_pass_fail_modal: bool = False
+    version: str | None = None
 
 
 class ConfigManager:

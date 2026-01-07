@@ -18,7 +18,8 @@
         "failed": "échoué",
         "stopped": "arrêté",
         "unknown": "inconnu"
-      }
+      },
+      "version": "Version"
   },
   "button": {
     "start": "Commencer",

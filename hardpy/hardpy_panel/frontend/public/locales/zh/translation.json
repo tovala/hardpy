@@ -18,7 +18,8 @@
         "failed": "失败",
         "stopped": "已停止",
         "unknown": "未知"
-      }
+      },
+      "version": "版本"
   },
   "button": {
     "start": "开始",
