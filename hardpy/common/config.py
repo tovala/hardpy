@@ -194,6 +194,12 @@ class ConfigManager:
         except ValidationError:
             logger.exception("Error parsing TOML")
             return None
+
+        version_file = toml_path / "version.txt"
+        if version_file.exists():
+            with Path.open(version_file, "r") as vf:
+                cls.obj.version = vf.read().strip()
+
         return cls.obj
 
     @classmethod
