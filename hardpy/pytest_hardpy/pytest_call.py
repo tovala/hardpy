@@ -657,7 +657,7 @@ def run_dialog_box(dialog_box_data: DialogBox) -> Any:  # noqa: ANN401
     return dialog_box_data.widget.convert_data(input_dbx_data)
 
 
-def run_async_dialog_box(dialog_box_data: DialogBox) -> None:  # noqa: ANN401
+def run_async_dialog_box(dialog_box_data: DialogBox) -> None:
     """Display a dialog box.
 
     Args:
@@ -770,7 +770,7 @@ def clear_operator_message() -> None:
 
 
 def set_nav_status(
-    status: str, value: str | bool, display: bool = True, name: str | None = None
+    status: str, value: str | bool, display: bool = True, name: str | None = None,
 ) -> None:
     """Set navigation status for HardPy UI.
 
@@ -780,7 +780,6 @@ def set_nav_status(
         display (bool): whether to display the navigation status
         name (str | None): navigation status name
     """
-
     reporter = RunnerReporter()
     key = reporter.generate_key(DF.NAV_STATUS, status)
     _cleanup_widget(reporter, key)
@@ -811,8 +810,10 @@ def clear_nav_status(status_type: str | None = None) -> None:
     else:
         nav_status_dict = reporter.get_field(reporter.generate_key(DF.NAV_STATUS))
         if isinstance(nav_status_dict, dict):
-            for status_type_key in nav_status_dict.keys():
-                keys.append(reporter.generate_key(DF.NAV_STATUS, status_type_key))
+            keys.extend(
+                reporter.generate_key(DF.NAV_STATUS, status_type_key)
+                for status_type_key in nav_status_dict
+            )
 
     for key in keys:
         _cleanup_widget(reporter, key)
@@ -885,8 +886,6 @@ def _get_operator_data() -> str:
     Returns:
         str: operator panel data
     """
-    reporter = RunnerReporter()
-
     data: str | None = None
     while not data:
         data = get_operator_dialog_data()

@@ -6,16 +6,16 @@ enable_test_pass_fail_modal = false
 [database]
 user = "dev"
 password = "dev"
-host = "100.90.173.76"
+host = "192.168.30.144"
 port = 5984
 
 [database_frontend]
 user = "dev"
 password = "dev"
-host = "100.90.173.76"
+host = "192.168.30.144"
 port = 5984
 
 [frontend]
-host = "100.90.173.76"
+host = "127.0.0.1"
 port = 8000
 language = "en"

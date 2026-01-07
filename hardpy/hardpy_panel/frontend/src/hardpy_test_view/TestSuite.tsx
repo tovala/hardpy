@@ -117,6 +117,8 @@ export class TestSuite extends React.Component<Props, State> {
     </div>
   );
 
+  private containerRef = React.createRef<HTMLDivElement>();
+
   static defaultProps: Partial<Props> = {
     defaultOpen: true,
   };
@@ -132,48 +134,50 @@ export class TestSuite extends React.Component<Props, State> {
       return <div>{t("testSuite.loading")}</div>;
     }
     return (
-      <Callout style={{ padding: 0, borderRadius: 0 }} className="test-suite">
-        <div style={{ display: "flex" }}>
-          <div style={{ flex: "1 1 0%" }}>
-            <Button
-              style={{ margin: "2px" }}
-              minimal={true}
-              onClick={this.handleClick}
-            >
-              <div style={{ display: "flex", alignItems: "center" }}>
-                <TestStatus
-                  status={
-                    this.props.commonTestRunStatus != "run" &&
-                    (this.props.test.status == "run" ||
-                      this.props.test.status == "ready")
-                      ? "stucked"
-                      : this.props.test.status
-                  }
-                />
-                <Icon
-                  style={{ marginRight: "10px", marginLeft: "10px" }}
-                  icon={this.state.isOpen ? "chevron-down" : "chevron-right"}
-                ></Icon>
-                <span>
-                  {this.renderName(this.props.test.name, this.props.index + 1)}
-                </span>
-              </div>
-            </Button>
+      <div ref={this.containerRef}>
+        <Callout style={{ padding: 0, borderRadius: 0 }} className="test-suite">
+          <div style={{ display: "flex" }}>
+            <div style={{ flex: "1 1 0%" }}>
+              <Button
+                style={{ margin: "2px" }}
+                minimal={true}
+                onClick={this.handleClick}
+              >
+                <div style={{ display: "flex", alignItems: "center" }}>
+                  <TestStatus
+                    status={
+                      this.props.commonTestRunStatus != "run" &&
+                      (this.props.test.status == "run" ||
+                        this.props.test.status == "ready")
+                        ? "stucked"
+                        : this.props.test.status
+                    }
+                  />
+                  <Icon
+                    style={{ marginRight: "10px", marginLeft: "10px" }}
+                    icon={this.state.isOpen ? "chevron-down" : "chevron-right"}
+                  ></Icon>
+                  <span>
+                    {this.renderName(this.props.test.name, this.props.index + 1)}
+                  </span>
+                </div>
+              </Button>
+            </div>
+            {this.renderTestSuiteRightPanel(this.props.test)}
           </div>
-          {this.renderTestSuiteRightPanel(this.props.test)}
-        </div>
-        <Collapse
-          isOpen={this.state.isOpen}
-          keepChildrenMounted={true}
-          className="test-suite-content"
-        >
-          {this.props.test.status != "busy" ? (
-            this.renderTests(this.props.test.cases)
-          ) : (
-            <Spin indicator={TestSuite.LOADING_ICON} />
-          )}
-        </Collapse>
-      </Callout>
+          <Collapse
+            isOpen={this.state.isOpen}
+            keepChildrenMounted={true}
+            className="test-suite-content"
+          >
+            {this.props.test.status != "busy" ? (
+              this.renderTests(this.props.test.cases)
+            ) : (
+              <Spin indicator={TestSuite.LOADING_ICON} />
+            )}
+          </Collapse>
+        </Callout>
+      </div>
     );
   }
 
@@ -188,12 +192,42 @@ export class TestSuite extends React.Component<Props, State> {
 
     if (anyRunningOrFailed && !this.state.isOpen && !this.state.automaticallyOpened) {
       this.setState({ isOpen: true, prevIsOpen: this.state.isOpen, automaticallyOpened: true });
+      // Don't scroll to suite here - let the test case scroll logic handle it
       return;
     }
 
     if (!anyRunningOrFailed && this.state.isOpen && this.state.automaticallyOpened) {
       this.setState({ isOpen: false, prevIsOpen: this.state.isOpen, automaticallyOpened: false });
       return;
+    }
+
+    // Scroll to running test case within the suite
+    if (this.state.isOpen && this.containerRef.current) {
+      const caseEntries = Object.entries(this.props.test.cases);
+      const runningIndex = caseEntries.findIndex(
+        ([_, test_case]) => test_case.status === "run"
+      );
+
+      const prevCaseEntries = prevProps.test.cases ? Object.entries(prevProps.test.cases) : [];
+      const prevRunningIndex = prevCaseEntries.findIndex(
+        ([_, test_case]) => test_case.status === "run"
+      );
+
+      const justOpened = !prevState.isOpen && this.state.isOpen;
+
+      // If a new test case started running OR suite just opened with a running test, scroll to it
+      if (runningIndex !== -1 && (runningIndex !== prevRunningIndex || justOpened)) {
+        setTimeout(() => {
+          // Find all table rows within this specific test suite
+          const allRows = this.containerRef.current?.querySelectorAll('.rdt_TableRow');
+          if (allRows && allRows[runningIndex]) {
+            allRows[runningIndex].scrollIntoView({
+              behavior: 'smooth',
+              block: 'center',
+            });
+          }
+        }, 400);
+      }
     }
   }
 
@@ -281,6 +315,16 @@ export class TestSuite extends React.Component<Props, State> {
       },
     ];
 
+    const conditionalRowStyles = [
+      {
+        when: (row: string, index: number) => case_array[index]?.status === 'run',
+        style: {
+          backgroundColor: '#fffacd',
+          borderLeft: '4px solid #ffa500',
+        },
+      },
+    ];
+
     return (
       // compensation for 1px shadow of Table
       <div style={{ margin: "3px", paddingBottom: "4px", borderRadius: "2px" }}>
@@ -290,6 +334,7 @@ export class TestSuite extends React.Component<Props, State> {
           data={case_names}
           highlightOnHover={true}
           dense={true}
+          conditionalRowStyles={conditionalRowStyles}
         />
       </div>
     );

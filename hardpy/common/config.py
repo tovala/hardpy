@@ -79,6 +79,7 @@ class HardpyConfig(BaseModel, extra="allow"):
     title: str = "HardPy TOML config"
     tests_name: str = ""
     database: DatabaseConfig = DatabaseConfig()
+    database_frontend: DatabaseConfig = DatabaseConfig()
     frontend: FrontendConfig = FrontendConfig()
     stand_cloud: StandCloudConfig = StandCloudConfig()
     current_test_config: str = ""

@@ -1,0 +1,109 @@
+name: Release (Local Fork)
+
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  git-tag-check:
+    name: Git Tag Check
+    if: github.repository != 'everypinio/hardpy'
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.x'
+        architecture: 'x64'
+        cache: 'pip'
+    - name: Install dependencies
+      run: python -m pip install toml
+    - name: Check Git Tag
+      run: |
+        python <<HEREDOC
+        from pathlib import Path
+        import toml
+        import sys
+
+        if '${{ github.ref_type }}' != 'tag':
+          sys.exit(f"Not on a tag")
+
+        gitversion = '${{ github.ref_name }}'
+        # Strip 'v' prefix if present
+        if gitversion.startswith('v'):
+            gitversion = gitversion[1:]
+        version = "unknown"
+
+        pyproject_toml_file = Path(__file__).parent / "pyproject.toml"
+        if pyproject_toml_file.exists() and pyproject_toml_file.is_file():
+            data = toml.load(pyproject_toml_file)
+            if "project" in data and "version" in data["project"]:
+                version = data["project"]["version"]
+
+        if version != gitversion:
+          sys.exit(f"Git Tag '{gitversion}' doesn't match package version '{version}'")
+        HEREDOC
+
+  build:
+    name: Build Frontend and Backend
+    needs: [git-tag-check]
+    runs-on: ubuntu-latest
+    env:
+      NODE_VERSION: "20.x"
+      YARN_VERSION: "4.0.1"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+            node-version: 20.x
+      - name: Set up Yarn
+        run: corepack enable; yarn set version $YARN_VERSION
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+          architecture: 'x64'
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install .[build] twine
+      - name: Building dist
+        run: python -m build
+      - name: Store the distribution packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-package-distributions
+          path: dist/
+
+  github-release:
+    needs: [build]
+    name: GitHub Release
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+    - name: Download all the dists
+      uses: actions/download-artifact@v4
+      with:
+        name: python-package-distributions
+        path: dist/
+    - name: Create GitHub Release
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      run: >-
+        gh release create
+        '${{ github.ref_name }}'
+        --repo '${{ github.repository }}'
+        --title '${{ github.ref_name }}'
+        --notes ""
+    - name: Upload artifacts to GitHub Release
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      run: >-
+        gh release upload
+        '${{ github.ref_name }}' dist/*.tar.gz dist/*.whl
+        --repo '${{ github.repository }}'
