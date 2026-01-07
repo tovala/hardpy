@@ -646,6 +646,54 @@ def test_text_input():
     assert response == "ok", "The entered text is not correct"
 ```
 
+
+#### run_async_dialog_box
+
+Display a dialog box.
+
+**Arguments:**
+- `dialog_box_data` *(DialogBox)*: Data for creating the dialog box.
+
+**Example:**
+
+```python
+from hardpy import dialog_box
+def test_text_input():
+    dbx = DialogBox(
+        dialog_text="Type 'ok' and press the Confirm button",
+        title_bar="Example of text input",
+        widget=TextInputWidget(),
+        image=ImageComponent(address="assets/test.png", width=50),
+    )
+
+    run_async_dialog_box(dbx)
+
+    while True:
+        response = get_operator_dialog_data()
+        if response is not None:
+            break
+
+        # Some other async operations can be performed here
+
+    clear_dialog_box()
+
+    set_message(f"Entered text {response}")
+    assert response == "ok", "The entered text is not correct"
+```
+
+#### get_operator_dialog_data
+
+Get operator panel dialog data.
+
+Clears the dialog data after retrieving it, if exists.
+
+**Returns:**
+- *(str | None)*: operator panel data
+
+#### clear_dialog_box
+
+Closes the dialog box if it is open.
+
 #### get_current_report
 
 Returns the current report from the database **runstore**.
