@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from logging import getLogger
+import os
 from pathlib import Path
 
 import tomli
@@ -199,6 +200,8 @@ class ConfigManager:
         if version_file.exists():
             with Path.open(version_file, "r") as vf:
                 cls.obj.version = vf.read().strip()
+
+        cls.obj.version = os.getenv("HARDPY_VERSION", cls.obj.version)
 
         return cls.obj
 
