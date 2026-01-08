@@ -201,7 +201,7 @@ class ConfigManager:
             with Path.open(version_file, "r") as vf:
                 cls.obj.version = vf.read().strip()
 
-        cls.obj.version = os.getenv("HARDPY_VERSION", cls.obj.version)
+        cls.obj.version = os.getenv("APPLIANCE_VERSION", cls.obj.version)
 
         return cls.obj
 
