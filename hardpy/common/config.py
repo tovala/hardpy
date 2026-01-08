@@ -39,9 +39,9 @@ class FrontendConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     host: str = "localhost"
-    url: str = "localhost"
     port: int = 8000
     language: str = "en"
+    url: str = "localhost"
 
 
 class StandCloudConfig(BaseModel):
