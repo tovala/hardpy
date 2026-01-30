@@ -14,6 +14,7 @@ class DatabaseField(str, Enum):
     CAUSED_DUT_FAILURE_ID = "caused_dut_failure_id"
     GROUP = "group"
     ERROR_CODE = "error_code"
+    APPLIANCE_VERSION = "appliance_version"
     STATUS = "status"
     START_TIME = "start_time"
     STOP_TIME = "stop_time"

@@ -35,6 +35,7 @@ class HookReporter(BaseReporter):
         self.set_doc_value(DF.BATCH_SN, None)
         self.set_doc_value(DF.CAUSED_DUT_FAILURE_ID, None)
         self.set_doc_value(DF.ERROR_CODE, None)
+        self.set_doc_value(DF.APPLIANCE_VERSION, None)
         self.set_doc_value(DF.STATUS, TestStatus.READY)
         self.set_doc_value(DF.START_TIME, None)
         self.set_doc_value(DF.STOP_TIME, None)
@@ -88,6 +89,14 @@ class HookReporter(BaseReporter):
             progress (int): test progress
         """
         self.set_doc_value(DF.PROGRESS, progress, statestore_only=True)
+
+    def set_appliance_version(self, appliance_version: str | None) -> None:
+        """Set appliance version.
+
+        Args:
+            appliance_version (str | None): appliance version
+        """
+        self.set_doc_value(DF.APPLIANCE_VERSION, appliance_version)
 
     def set_assertion_msg(self, module_id: str, case_id: str, msg: str | None) -> None:
         """Set case assertion message.

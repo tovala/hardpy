@@ -105,6 +105,12 @@ def pytest_addoption(parser: Parser) -> None:
         default=[],
         help="Dynamic arguments for test execution (key=value format)",
     )
+    parser.addoption(
+        "--hardpy-appliance-version",
+        action="store",
+        default="",
+        help="HardPy appliance version",
+    )
 
 
 # Bootstrapping hooks
@@ -133,6 +139,7 @@ class HardpyPlugin:
         self._tests_name: str = ""
         self._is_critical_not_passed = False
         self._start_args = {}
+        self._appliance_version = None
 
         if system() == "Linux":
             signal.signal(signal.SIGTERM, self._stop_handler)
@@ -169,6 +176,10 @@ class HardpyPlugin:
         _args = config.getoption("--hardpy-start-arg") or []
         if _args:
             self._start_args = dict(arg.split("=", 1) for arg in _args if "=" in arg)
+
+        appliance_version = config.getoption("--hardpy-appliance-version")
+        if appliance_version:
+            self._appliance_version = str(appliance_version)
 
         config.addinivalue_line("markers", "case_name")
         config.addinivalue_line("markers", "module_name")
@@ -210,6 +221,7 @@ class HardpyPlugin:
     ) -> None:
         """Call after collection phase."""
         self._reporter.init_doc(self._tests_name)
+        self._reporter.set_appliance_version(self._appliance_version)
 
         nodes = {}
         modules = set()

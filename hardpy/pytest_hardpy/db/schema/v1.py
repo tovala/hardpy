@@ -247,4 +247,5 @@ class ResultRunStore(IBaseResult):
     batch_serial_number: str | None = None
     caused_dut_failure_id: str | None = None
     error_code: int | None = None
+    appliance_version: str | None = None
     artifact: dict = {}

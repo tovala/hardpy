@@ -85,6 +85,8 @@ class PyTestWrapper:
             logging.info("Using test configuration file: %s", test_config_file)
             cmd.extend(["--config-file", test_config_file])
 
+        if self.config.version:
+            cmd.extend(["--hardpy-appliance-version", self.config.version])
 
         if self.config.stand_cloud.connection_only:
             cmd.append("--sc-connection-only")
