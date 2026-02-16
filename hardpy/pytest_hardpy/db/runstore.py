@@ -4,18 +4,17 @@
 from __future__ import annotations
 
 import json
-from json import dumps
 from logging import getLogger
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
-
-from glom import PathAccessError, assign, glom
 
 from hardpy.common.config import ConfigManager, StorageType
 from hardpy.common.singleton import SingletonMeta
 from hardpy.pytest_hardpy.db.common import (
     StorageInterface,
     create_default_doc_structure,
+    get_field as _get_field,
+    update_doc_value as _update_doc_value,
 )
 from hardpy.pytest_hardpy.db.const import DatabaseField as DF  # noqa: N817
 from hardpy.pytest_hardpy.db.schema import ResultRunStore
@@ -60,10 +59,7 @@ class JsonRunStore(StorageInterface):
         Returns:
             Any: Field value, or None if path does not exist
         """
-        try:
-            return glom(self._doc, key)
-        except PathAccessError:
-            return None
+        return _get_field(self._doc, key)
 
     def update_doc_value(self, key: str, value: Any) -> None:  # noqa: ANN401
         """Update document value in memory (does not persist).
@@ -72,15 +68,7 @@ class JsonRunStore(StorageInterface):
             key (str): Field key, supports nested access with dots
             value (Any): Value to set
         """
-        try:
-            dumps(value)
-        except Exception:  # noqa: BLE001
-            value = dumps(value, default=str)
-
-        if "." in key:
-            assign(self._doc, key, value, missing=dict)
-        else:
-            self._doc[key] = value
+        _update_doc_value(self._doc, key, value)
 
     def update_db(self) -> None:
         """Persist in-memory document to JSON file with atomic write."""
@@ -198,10 +186,7 @@ class CouchDBRunStore(StorageInterface):
         Returns:
             Any: Field value, or None if path does not exist
         """
-        try:
-            return glom(self._doc, key)
-        except PathAccessError:
-            return None
+        return _get_field(self._doc, key)
 
     def update_doc_value(self, key: str, value: Any) -> None:  # noqa: ANN401
         """Update document value in memory (does not persist).
@@ -210,15 +195,7 @@ class CouchDBRunStore(StorageInterface):
             key (str): Field key, supports nested access with dots
             value (Any): Value to set
         """
-        try:
-            dumps(value)
-        except Exception:  # noqa: BLE001
-            value = dumps(value, default=str)
-
-        if "." in key:
-            assign(self._doc, key, value, missing=dict)
-        else:
-            self._doc[key] = value
+        _update_doc_value(self._doc, key, value)
 
     def update_db(self) -> None:
         """Persist in-memory document to storage backend."""

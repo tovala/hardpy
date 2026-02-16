@@ -4,7 +4,10 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from json import dumps
 from typing import TYPE_CHECKING, Any
+
+from glom import PathAccessError, assign, glom
 
 from hardpy.pytest_hardpy.db.const import (
     DatabaseField as DF,  # noqa: N817  # noqa: N817
@@ -79,3 +82,38 @@ def create_default_doc_structure(doc_id: str, doc_id_for_rev: str) -> dict:
         DF.TEST_STAND: {},
         DF.PROCESS: {},
     }
+
+
+def update_doc_value(doc: dict, key: str, value: Any) -> None:  # noqa: ANN401
+    """Update document value in memory (does not persist).
+
+    Args:
+        doc (dict): Storage document
+        key (str): Field key, supports nested access with dots
+        value (Any): Value to set
+    """
+    try:
+        dumps(value)
+    except Exception:  # noqa: BLE001
+        value = dumps(value, default=str)
+
+    if "." in key:
+        assign(doc, key, value, missing=dict)
+    else:
+        doc[key] = value
+
+
+def get_field(doc: dict, key: str) -> Any:  # noqa: ANN401
+    """Get field from the storage.
+
+    Args:
+        doc (dict): Storage document
+        key (str): Field key, supports nested access with dots
+
+    Returns:
+        Any: Field value, or None if path does not exist
+    """
+    try:
+        return glom(doc, key)
+    except PathAccessError:
+        return None
