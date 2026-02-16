@@ -289,13 +289,13 @@ class HookReporter(BaseReporter):
         }
         for k, v in fields.items():
             key = self.generate_key(DF.MODULES, module_id, DF.CASES, case_id, k)
-            if self._statestore.get_field(key):
+            if self._runstore.get_field(key):
                 self.set_doc_value(key, v)
 
     def clear_error_code(self) -> None:
         """Clear error code."""
         key = self.generate_key(DF.ERROR_CODE)
-        if self._statestore.get_field(key):
+        if self._runstore.get_field(key):
             self.set_doc_value(key, None)
 
     def update_node_order(self, nodes: dict) -> None:
