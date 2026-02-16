@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import json
-from abc import ABC, abstractmethod
 from json import dumps
 from logging import getLogger
 from pathlib import Path
@@ -14,7 +13,10 @@ from glom import PathAccessError, assign, glom
 
 from hardpy.common.config import ConfigManager, StorageType
 from hardpy.common.singleton import SingletonMeta
-from hardpy.pytest_hardpy.db.common import create_default_doc_structure
+from hardpy.pytest_hardpy.db.common import (
+    StorageInterface,
+    create_default_doc_structure,
+)
 from hardpy.pytest_hardpy.db.const import DatabaseField as DF  # noqa: N817
 from hardpy.pytest_hardpy.db.schema import ResultStateStore
 
@@ -23,55 +25,7 @@ if TYPE_CHECKING:
     from pydantic import BaseModel
 
 
-class StateStoreInterface(ABC):
-    """Interface for state storage implementations."""
-
-    @abstractmethod
-    def get_field(self, key: str) -> Any:  # noqa: ANN401
-        """Get field from the state store.
-
-        Args:
-            key (str): Field key, supports nested access with dots
-
-        Returns:
-            Any: Field value
-        """
-
-    @abstractmethod
-    def update_doc_value(self, key: str, value: Any) -> None:  # noqa: ANN401
-        """Update document value in memory (does not persist).
-
-        Args:
-            key (str): Field key, supports nested access with dots
-            value (Any): Value to set
-        """
-
-    @abstractmethod
-    def update_db(self) -> None:
-        """Persist in-memory document to storage backend."""
-
-    @abstractmethod
-    def update_doc(self) -> None:
-        """Reload document from storage backend to memory."""
-
-    @abstractmethod
-    def get_document(self) -> BaseModel:
-        """Get full document with schema validation.
-
-        Returns:
-            BaseModel: Validated document model
-        """
-
-    @abstractmethod
-    def clear(self) -> None:
-        """Clear storage and reset to initial state."""
-
-    @abstractmethod
-    def compact(self) -> None:
-        """Optimize storage (implementation-specific, may be no-op)."""
-
-
-class JsonStateStore(StateStoreInterface):
+class JsonStateStore(StorageInterface):
     """JSON file-based state storage implementation.
 
     Stores test execution state using JSON files.
@@ -198,7 +152,7 @@ class JsonStateStore(StateStoreInterface):
         return create_default_doc_structure(self._doc_id, self._doc_id)
 
 
-class CouchDBStateStore(StateStoreInterface):
+class CouchDBStateStore(StorageInterface):
     """CouchDB-based state storage implementation.
 
     Stores test execution state using CouchDB.
@@ -343,11 +297,11 @@ class StateStore(metaclass=SingletonMeta):
     the appropriate concrete implementation (JsonStateStore or CouchDBStateStore).
     """
 
-    def __new__(cls) -> StateStoreInterface:  # type: ignore[misc]
+    def __new__(cls) -> StorageInterface:  # type: ignore[misc]
         """Create and return the appropriate storage implementation.
 
         Returns:
-            StateStoreInterface: Concrete storage implementation based on config
+            StorageInterface: Concrete storage implementation based on config
         """
         config = ConfigManager()
         storage_type = config.config.database.storage_type

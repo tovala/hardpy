@@ -3,7 +3,62 @@
 
 from __future__ import annotations
 
-from hardpy.pytest_hardpy.db.const import DatabaseField as DF  # noqa: N817
+from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING, Any
+
+from hardpy.pytest_hardpy.db.const import (
+    DatabaseField as DF,  # noqa: N817  # noqa: N817
+)
+
+if TYPE_CHECKING:
+    from pydantic import BaseModel
+
+class StorageInterface(ABC):
+    """Interface for storage implementations."""
+
+    @abstractmethod
+    def get_field(self, key: str) -> Any:  # noqa: ANN401
+        """Get field from the storage.
+
+        Args:
+            key (str): Field key, supports nested access with dots
+
+        Returns:
+            Any: Field value
+        """
+
+    @abstractmethod
+    def update_doc_value(self, key: str, value: Any) -> None:  # noqa: ANN401
+        """Update document value in memory (does not persist).
+
+        Args:
+            key (str): Field key, supports nested access with dots
+            value (Any): Value to set
+        """
+
+    @abstractmethod
+    def update_db(self) -> None:
+        """Persist in-memory document to storage backend."""
+
+    @abstractmethod
+    def update_doc(self) -> None:
+        """Reload document from storage backend to memory."""
+
+    @abstractmethod
+    def get_document(self) -> BaseModel:
+        """Get full document with schema validation.
+
+        Returns:
+            BaseModel: Validated document model
+        """
+
+    @abstractmethod
+    def clear(self) -> None:
+        """Clear storage and reset to initial state."""
+
+    @abstractmethod
+    def compact(self) -> None:
+        """Optimize storage (implementation-specific, may be no-op)."""
 
 
 def create_default_doc_structure(doc_id: str, doc_id_for_rev: str) -> dict:
