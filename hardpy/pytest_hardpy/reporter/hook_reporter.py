@@ -280,22 +280,17 @@ class HookReporter(BaseReporter):
             module_id (str): module id
             case_id (str): case id
         """
-        # fmt: off
-        key = self.generate_key(DF.MODULES, module_id, DF.CASES, case_id, DF.ARTIFACT)
-        self.set_doc_value(key, {})
-
-        key = self.generate_key(DF.MODULES, module_id, DF.CASES, case_id, DF.MSG)
-        self.set_doc_value(key, None)
-
-        key = self.generate_key(DF.MODULES, module_id, DF.CASES, case_id, DF.ASSERTION_MSG)  # noqa: E501
-        self.set_doc_value(key, None)
-
-        key = self.generate_key(DF.MODULES, module_id, DF.CASES, case_id, DF.MEASUREMENTS)  # noqa: E501
-        self.set_doc_value(key, [])
-
-        key = self.generate_key(DF.MODULES, module_id, DF.CASES, case_id, DF.CHART)
-        self.set_doc_value(key, None)
-        # fmt: on
+        fields = {
+            DF.ARTIFACT: {},
+            DF.MSG: None,
+            DF.ASSERTION_MSG: None,
+            DF.MEASUREMENTS: [],
+            DF.CHART: None,
+        }
+        for k, v in fields.items():
+            key = self.generate_key(DF.MODULES, module_id, DF.CASES, case_id, k)
+            if self._statestore.get_field(key):
+                self.set_doc_value(key, v)
 
     def clear_error_code(self) -> None:
         """Clear error code."""
