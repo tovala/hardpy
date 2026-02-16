@@ -30,15 +30,10 @@ class HookReporter(BaseReporter):
             doc_name (str): test run name
         """
         self.set_doc_value(DF.NAME, doc_name)
-        self.set_doc_value(DF.USER, None)
-        self.set_doc_value(DF.BATCH_SN, None)
-        self.set_doc_value(DF.CAUSED_DUT_FAILURE_ID, None)
-        self.set_doc_value(DF.ERROR_CODE, None)
         self.set_doc_value(DF.STATUS, TestStatus.READY)
         self.set_doc_value(DF.START_TIME, None)
         self.set_doc_value(DF.STOP_TIME, None)
         self.set_doc_value(DF.PROGRESS, 0, statestore_only=True)
-        self.set_doc_value(DF.ARTIFACT, {}, runstore_only=True)
         self.set_doc_value(DF.OPERATOR_MSG, {}, statestore_only=True)
         self.set_doc_value(DF.ALERT, "", statestore_only=True)
         self.set_doc_value(DF.OPERATOR_DATA, {}, statestore_only=True)
