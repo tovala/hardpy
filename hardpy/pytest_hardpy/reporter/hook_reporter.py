@@ -295,7 +295,8 @@ class HookReporter(BaseReporter):
     def clear_error_code(self) -> None:
         """Clear error code."""
         key = self.generate_key(DF.ERROR_CODE)
-        self.set_doc_value(key, None)
+        if self._statestore.get_field(key):
+            self.set_doc_value(key, None)
 
     def update_node_order(self, nodes: dict) -> None:
         """Update node order.
