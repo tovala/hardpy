@@ -12,9 +12,13 @@ from glom import PathAccessError, assign, glom
 from hardpy.pytest_hardpy.db.const import (
     DatabaseField as DF,  # noqa: N817  # noqa: N817
 )
+from hardpy.pytest_hardpy.db.schema import ResultRunStore
 
 if TYPE_CHECKING:
+    from collections.abc import Generator
+
     from pydantic import BaseModel
+
 
 class StorageInterface(ABC):
     """Interface for storage implementations."""
@@ -62,6 +66,51 @@ class StorageInterface(ABC):
     @abstractmethod
     def compact(self) -> None:
         """Optimize storage (implementation-specific, may be no-op)."""
+
+
+class TempStorageInterface(ABC):
+    """Interface for temporary storage implementations."""
+
+    @abstractmethod
+    def push_report(self, report: ResultRunStore) -> bool:
+        """Push report to the temporary storage.
+
+        Args:
+            report (ResultRunStore): report to store
+
+        Returns:
+            bool: True if successful, False otherwise
+        """
+
+    @abstractmethod
+    def reports(self) -> Generator[dict]:
+        """Get all reports from the temporary storage.
+
+        Yields:
+            dict: report from temporary storage
+        """
+
+    @abstractmethod
+    def delete(self, report_id: str) -> bool:
+        """Delete report from the temporary storage.
+
+        Args:
+            report_id (str): report ID to delete
+
+        Returns:
+            bool: True if successful, False otherwise
+        """
+
+    def dict_to_schema(self, report: dict) -> ResultRunStore:
+        """Convert report dict to report schema.
+
+        Args:
+            report (dict): report dictionary
+
+        Returns:
+            ResultRunStore: validated report schema
+        """
+        return ResultRunStore(**report)
 
 
 def create_default_doc_structure(doc_id: str, doc_id_for_rev: str) -> dict:
