@@ -2,6 +2,11 @@
 
 Versions follow [Semantic Versioning](https://semver.org/): `<major>.<minor>.<patch>`.
 
+## 0.22.2
+
+* Reduce in the size of the test report.
+  [[PR-264](https://github.com/everypinio/hardpy/pull/264)]
+
 ## 0.22.1
 
 * Add the `--hardpy-config-file` to the pytest plugin. 
