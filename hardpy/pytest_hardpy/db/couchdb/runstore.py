@@ -17,6 +17,7 @@ from requests.exceptions import ConnectionError  # noqa: A004
 from hardpy.common.config import ConfigManager
 from hardpy.pytest_hardpy.db.common import (
     StorageInterface,
+    clear_doc_value as _clear_doc_value,
     create_default_doc_structure,
     get_field as _get_field,
     update_doc_value as _update_doc_value,
@@ -88,6 +89,17 @@ class CouchDBRunStore(StorageInterface):
             value (Any): Value to set
         """
         _update_doc_value(self._doc, key, value)
+
+    def clear_doc_value(self, key: str) -> Any:  # noqa: ANN401
+        """Clear field from the storage.
+
+        Args:
+            key (str): Field key, supports nested access with dots
+
+        Returns:
+            Any: Field value, or None if path does not exist
+        """
+        return _clear_doc_value(self._doc, key)
 
     def update_db(self) -> None:
         """Persist in-memory document to storage backend."""

@@ -58,6 +58,18 @@ class BaseReporter:
         self._runstore.update_doc_value(key, value)
         self._statestore.update_doc_value(key, value)
 
+    def clear_doc_value(self, key: str) -> Any:  # noqa: ANN401
+        """Clear field from the storage.
+
+        Args:
+            key (str): Field key, supports nested access with dots
+
+        Returns:
+            Any: Field value, or None if path does not exist
+        """
+        self._statestore.clear_doc_value(key)
+        self._runstore.clear_doc_value(key)
+
     def set_alert(self, alert: str) -> None:
         """Set alert message.
 
