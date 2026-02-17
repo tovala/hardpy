@@ -38,6 +38,15 @@ class HookReporter(BaseReporter):
         self.set_doc_value(DF.ALERT, "", statestore_only=True)
         self.set_doc_value(DF.OPERATOR_DATA, {}, statestore_only=True)
 
+        for field in (
+            DF.USER,
+            DF.CAUSED_DUT_FAILURE_ID,
+            DF.ERROR_CODE,
+            DF.BATCH_SN,
+            DF.ARTIFACT,
+        ):
+            self.clear_doc_value(field)
+
         test_stand_tz = self.generate_key(DF.TEST_STAND, DF.TIMEZONE)
         self.set_doc_value(test_stand_tz, str(get_localzone().key))
 
