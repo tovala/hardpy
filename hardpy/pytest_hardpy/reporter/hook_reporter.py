@@ -30,15 +30,10 @@ class HookReporter(BaseReporter):
             doc_name (str): test run name
         """
         self.set_doc_value(DF.NAME, doc_name)
-        self.set_doc_value(DF.USER, None)
-        self.set_doc_value(DF.BATCH_SN, None)
-        self.set_doc_value(DF.CAUSED_DUT_FAILURE_ID, None)
-        self.set_doc_value(DF.ERROR_CODE, None)
         self.set_doc_value(DF.STATUS, TestStatus.READY)
         self.set_doc_value(DF.START_TIME, None)
         self.set_doc_value(DF.STOP_TIME, None)
         self.set_doc_value(DF.PROGRESS, 0, statestore_only=True)
-        self.set_doc_value(DF.ARTIFACT, {}, runstore_only=True)
         self.set_doc_value(DF.OPERATOR_MSG, {}, statestore_only=True)
         self.set_doc_value(DF.ALERT, "", statestore_only=True)
         self.set_doc_value(DF.OPERATOR_DATA, {}, statestore_only=True)
@@ -115,8 +110,8 @@ class HookReporter(BaseReporter):
         item_statestore = self._statestore.get_field(key)
         item_runstore = self._runstore.get_field(key)
 
-        self._init_case(item_statestore, node_info, is_only_statestore=True)
-        self._init_case(item_runstore, node_info, is_only_runstore=True)
+        self._init_case(item_statestore, node_info)
+        self._init_case(item_runstore, node_info)
 
         self.set_doc_value(key, item_statestore, statestore_only=True)
         self.set_doc_value(key, item_runstore, runstore_only=True)
@@ -285,27 +280,23 @@ class HookReporter(BaseReporter):
             module_id (str): module id
             case_id (str): case id
         """
-        # fmt: off
-        key = self.generate_key(DF.MODULES, module_id, DF.CASES, case_id, DF.ARTIFACT)
-        self.set_doc_value(key, {})
-
-        key = self.generate_key(DF.MODULES, module_id, DF.CASES, case_id, DF.MSG)
-        self.set_doc_value(key, None)
-
-        key = self.generate_key(DF.MODULES, module_id, DF.CASES, case_id, DF.ASSERTION_MSG)  # noqa: E501
-        self.set_doc_value(key, None)
-
-        key = self.generate_key(DF.MODULES, module_id, DF.CASES, case_id, DF.MEASUREMENTS)  # noqa: E501
-        self.set_doc_value(key, [])
-
-        key = self.generate_key(DF.MODULES, module_id, DF.CASES, case_id, DF.CHART)
-        self.set_doc_value(key, None)
-        # fmt: on
+        fields = {
+            DF.ARTIFACT: {},
+            DF.MSG: None,
+            DF.ASSERTION_MSG: None,
+            DF.MEASUREMENTS: [],
+            DF.CHART: None,
+        }
+        for k, v in fields.items():
+            key = self.generate_key(DF.MODULES, module_id, DF.CASES, case_id, k)
+            if self._runstore.get_field(key):
+                self.set_doc_value(key, v)
 
     def clear_error_code(self) -> None:
         """Clear error code."""
         key = self.generate_key(DF.ERROR_CODE)
-        self.set_doc_value(key, None)
+        if self._runstore.get_field(key):
+            self.set_doc_value(key, None)
 
     def update_node_order(self, nodes: dict) -> None:
         """Update node order.
@@ -331,8 +322,6 @@ class HookReporter(BaseReporter):
         self,
         item: dict,
         node_info: NodeInfo,
-        is_only_runstore: bool = False,
-        is_only_statestore: bool = False,
     ) -> None:
         module_default = {
             DF.STATUS: TestStatus.READY,
@@ -348,16 +337,10 @@ class HookReporter(BaseReporter):
             DF.GROUP: self._get_case_group(node_info),
             DF.START_TIME: None,
             DF.STOP_TIME: None,
-            DF.ASSERTION_MSG: None,
-            DF.MSG: None,
             DF.ATTEMPT: 0,
-            DF.MEASUREMENTS: [],
-            DF.CHART: None,
         }
 
         if item.get(node_info.module_id) is None:
-            if is_only_runstore:
-                module_default[DF.ARTIFACT] = {}
             item[node_info.module_id] = module_default
         else:
             item[node_info.module_id][DF.STATUS] = TestStatus.READY
@@ -367,11 +350,6 @@ class HookReporter(BaseReporter):
             item[node_info.module_id][DF.STOP_TIME] = None
         item[node_info.module_id][DF.NAME] = self._get_module_name(node_info)
 
-        if is_only_runstore:
-            case_default[DF.ARTIFACT] = {}
-
-        if is_only_statestore:
-            case_default[DF.DIALOG_BOX] = {}
         item[node_info.module_id][DF.CASES][node_info.case_id] = case_default
 
     def _remove_outdate_node(
