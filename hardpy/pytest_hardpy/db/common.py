@@ -44,6 +44,10 @@ class StorageInterface(ABC):
         """
 
     @abstractmethod
+    def clear_doc_value(self) -> None:
+        """Clear field from the storage."""
+
+    @abstractmethod
     def update_db(self) -> None:
         """Persist in-memory document to storage backend."""
 
@@ -150,6 +154,19 @@ def update_doc_value(doc: dict, key: str, value: Any) -> None:  # noqa: ANN401
         assign(doc, key, value, missing=dict)
     else:
         doc[key] = value
+
+
+def clear_doc_value(doc: dict, key: str) -> Any:  # noqa: ANN401
+    """Clear field from the storage.
+
+    Args:
+        doc (dict): Storage document
+        key (str): Field key, supports nested access with dots
+
+    Returns:
+        Any: Field value, or None if path does not exist
+    """
+    return doc.pop(key, None)
 
 
 def get_field(doc: dict, key: str) -> Any:  # noqa: ANN401

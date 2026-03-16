@@ -28,5 +28,5 @@ def hardpy_opts(request):  # noqa: ANN001
         config_data = config_manager.read_config(
             Path(__file__).parent / "json_toml",
         )
-        return [ "--hardpy-clear-database", "--hardpy-pt"]
+        return ["--hardpy-clear-database", "--hardpy-pt"]
     return None
