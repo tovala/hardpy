@@ -2,7 +2,7 @@
 
 Versions follow [Semantic Versioning](https://semver.org/): `<major>.<minor>.<patch>`.
 
-## 0.22.2
+## 0.23.0
 
 * Reduce in the size of the test report.
   [[PR-264](https://github.com/everypinio/hardpy/pull/264)],
