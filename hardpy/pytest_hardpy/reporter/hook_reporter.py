@@ -47,6 +47,15 @@ class HookReporter(BaseReporter):
         ):
             self.clear_doc_value(field)
 
+        for field in (
+            DF.TEST_STAND,
+            DF.DUT,
+            DF.PROCESS,
+            DF.MODULES,
+        ):
+            key = self.generate_key(field)
+            self.set_doc_value(key, {})
+
         test_stand_tz = self.generate_key(DF.TEST_STAND, DF.TIMEZONE)
         self.set_doc_value(test_stand_tz, str(get_localzone().key))
 
