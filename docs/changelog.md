@@ -4,7 +4,7 @@ Versions follow [Semantic Versioning](https://semver.org/): `<major>.<minor>.<pa
 
 ## 0.23.0
 
-* Fix the reuse of the dialog box in a single test..
+* Fix the reuse of the dialog box in a single test.
   [[PR-268](https://github.com/everypinio/hardpy/pull/268)],
   [[ISSUE-266](https://github.com/everypinio/hardpy/issues/266)]
 * Fix CouchDB initialization process.
