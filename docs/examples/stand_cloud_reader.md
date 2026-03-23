@@ -13,7 +13,7 @@ To view the REST API documentation, the user can navigate to the format page
 https://service_name/integration/api/v1/docs,
 where `service_name` is the address of the **StandCloud** client.
 
-Example of documentation page address: https://demo.standcloud.io/integration/api/v1/docs
+Example of documentation page address: https://standcloud.everypin.io/integration/api/v1/docs
 
 To access **StandCloud**, contact **info@everypin.io**.
 
@@ -46,13 +46,13 @@ print(response.json())
 Request URL of this example:
 
 ```bash
-https://demo.standcloud.io/hardpy/api/v1/test_run/0196434d-e8f7-7ce1-81f7-e16f20487494
+https://standcloud.everypin.io/hardpy/api/v1/test_run/0196434d-e8f7-7ce1-81f7-e16f20487494
 ```
 
 REST API documentation page of this example:
 
 ```bash
-https://demo.standcloud.io/integration/api/v1/docs
+https://standcloud.everypin.io/integration/api/v1/docs
 ```
 
 **Response data example:**
@@ -97,7 +97,7 @@ The difference between the test run with filters and the tested DUT is described
 ```python
 import hardpy
 
-sc_connector = hardpy.StandCloudConnector(addr="demo.standcloud.io")
+sc_connector = hardpy.StandCloudConnector(addr="standcloud.everypin.io")
 reader = hardpy.StandCloudReader(sc_connector)
 
 param = {
@@ -113,13 +113,13 @@ print(response.json())
 Request URL of this example:
 
 ```bash
-https://demo.standcloud.io/hardpy/api/v1/test_run?part_number=PN-54321AB&status=pass&manufacturer=ABC_Corp&number_of_attempt=2
+https://standcloud.everypin.io/hardpy/api/v1/test_run?part_number=PN-54321AB&status=pass&manufacturer=ABC_Corp&number_of_attempt=2
 ```
 
 REST API documentation page of this example:
 
 ```bash
-https://demo.standcloud.io/integration/api/v1/docs
+https://standcloud.everypin.io/integration/api/v1/docs
 ```
 
 **Response data example:**
@@ -168,7 +168,7 @@ The difference between the test run with filters and the tested DUT is described
 ```python
 import hardpy
 
-sc_connector = hardpy.StandCloudConnector(addr="demo.standcloud.io")
+sc_connector = hardpy.StandCloudConnector(addr="standcloud.everypin.io")
 reader = hardpy.StandCloudReader(sc_connector)
 
 param = {
@@ -184,13 +184,13 @@ print(response.json())
 Request URL of this example:
 
 ```bash
-https://demo.standcloud.io/hardpy/api/v1/tested_dut?part_number=PN-54321AB&status=pass&manufacturer=ABC_Corp&attempt_count=3
+https://standcloud.everypin.io/hardpy/api/v1/tested_dut?part_number=PN-54321AB&status=pass&manufacturer=ABC_Corp&attempt_count=3
 ```
 
 REST API documentation page of this example:
 
 ```bash
-https://demo.standcloud.io/integration/api/v1/docs
+https://standcloud.everypin.io/integration/api/v1/docs
 ```
 
 **Response data example:**

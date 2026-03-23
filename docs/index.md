@@ -94,7 +94,7 @@ hide:
     ---
 
     Track yield, failures, and reruns with production-ready dashboards and serial-level traceability.
-    [Go to StandCloud](https://standcloud.io){ .md-button }
+    [Go to StandCloud](https://standcloud.everypin.io){ .md-button }
     ---
 
 </div>
