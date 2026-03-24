@@ -30,6 +30,7 @@ couchdb_ini = """; CouchDB Configuration Settings
 [couchdb]
 ;max_document_size = 4294967296 ; bytes
 ;os_process_timeout = 5000
+single_node = true
 
 [couch_peruser]
 ; If enabled, couch_peruser ensures that a private per-user database
@@ -45,6 +46,9 @@ couchdb_ini = """; CouchDB Configuration Settings
 ; Set a default q value for peruser-created databases that is different from
 ; cluster / q
 ;q = 1
+[cluster]
+default_n = 1
+n = 1
 
 [chttpd]
 ;port = {}
@@ -78,6 +82,8 @@ methods = GET, PUT, POST, HEAD, DELETE
 credentials = true
 headers = accept, authorization, content-type, origin, referer, x-csrf-token
 
+[log]
+level = warning
 
 [ssl]
 ;enable = true

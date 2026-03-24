@@ -2,6 +2,19 @@
 
 Versions follow [Semantic Versioning](https://semver.org/): `<major>.<minor>.<patch>`.
 
+## 0.23.0
+
+* Fix the `current_test_config` using.
+  [[PR-271](https://github.com/everypinio/hardpy/pull/271)]
+* Fix the reuse of the dialog box in a single test.
+  [[PR-268](https://github.com/everypinio/hardpy/pull/268)],
+  [[ISSUE-266](https://github.com/everypinio/hardpy/issues/266)]
+* Fix CouchDB initialization process.
+  [[PR-267](https://github.com/everypinio/hardpy/pull/267)]
+* Reduce in the size of the test report.
+  [[PR-264](https://github.com/everypinio/hardpy/pull/264)],
+  [[PR-265](https://github.com/everypinio/hardpy/pull/265)]
+
 ## 0.22.1
 
 * Add the `--hardpy-config-file` to the pytest plugin. 
