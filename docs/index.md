@@ -114,8 +114,9 @@ hide:
 
     ---
 
-    Track pass rate (yield), failures, and retests with dashboards and serial-number history.
-    [Go to StandCloud](https://standcloud.io){ .md-button .hp-center-button }
+    Track yield, failures, and reruns with production-ready dashboards and serial-level traceability.
+    [Go to StandCloud](https://standcloud.everypin.io){ .md-button }
+    ---
 
 </div>
 

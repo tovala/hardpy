@@ -24,7 +24,7 @@ class StandCloudReader:
     https://service_name/integration/api/v1/docs
 
     For example:
-    https://demo.standcloud.io/integration/api/v1/docs
+    https://standcloud.everypin.io/integration/api/v1/docs
     """
 
     def __init__(self, sc_connector: StandCloudConnector) -> None:

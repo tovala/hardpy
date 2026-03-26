@@ -15,7 +15,7 @@ to **StandCloud** at the specified `autosync_timeout` interval (in minutes).
 
 ### how to start
 
-1. Login to [standcloud.io](https://standcloud.io).
+1. Login to [standcloud.everypin.io](https://standcloud.everypin.io).
 2. Create a company or login to an existing one.
 3. Create and copy the API key.
 4. Launch `hardpy init stand_cloud --sc-api-key <your_api_key> --sc-autosync` 
@@ -53,7 +53,7 @@ auto_dismiss_pass = true
 auto_dismiss_timeout = 5
 
 [stand_cloud]
-address = "standcloud.io"
+address = "standcloud.everypin.io"
 connection_only = false
 autosync = false
 autosync_timeout = 30

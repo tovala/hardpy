@@ -51,7 +51,7 @@ auto_dismiss_pass = true
 auto_dismiss_timeout = 5
 
 [stand_cloud]
-address = "standcloud.io"
+address = "standcloud.everypin.io"
 connection_only = true
 autosync = true
 autosync_timeout = 30

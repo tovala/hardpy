@@ -8,7 +8,7 @@ StandCloud allows you to explore data patterns, create visualizations, and gain 
 This helps in identifying potential trends and opportunities.
 It allows you to identify potential limitations.
 
-For more information, visit the **StandCloud** [website](https://standcloud.io).
+For more information, visit the **StandCloud** [website](https://standcloud.everypin.io).
 
 ## StandCloud and HardPy integration
 
