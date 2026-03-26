@@ -2,6 +2,11 @@
 
 Versions follow [Semantic Versioning](https://semver.org/): `<major>.<minor>.<patch>`.
 
+## 0.23.1
+
+* Update the **StandCloud** default address.
+  [[PR-270](https://github.com/everypinio/hardpy/pull/270)]
+
 ## 0.23.0
 
 * Fix the `current_test_config` using.
@@ -152,7 +157,7 @@ Versions follow [Semantic Versioning](https://semver.org/): `<major>.<minor>.<pa
   using a single **CouchDB** instance instead of multiple instances.
   [[PR-187](https://github.com/everypinio/hardpy/pull/187)]
 
-## HardPy 0.15.2
+## 0.15.2
 
 * Change the logic of the test case attempts.
   The test case fields (msg, assertion_message, chart, measurements, and artifact)
@@ -160,12 +165,12 @@ Versions follow [Semantic Versioning](https://semver.org/): `<major>.<minor>.<pa
   The error code is now cleared when a test case passes on the second or subsequent attempt.
   [[PR-192](https://github.com/everypinio/hardpy/pull/192)]
 
-## HardPy 0.15.1
+## 0.15.1
 
 * Remove the `datetime` type from the info fields in all tables.
   [[PR-188](https://github.com/everypinio/hardpy/pull/188)]
 
-## HardPy 0.15.0
+## 0.15.0
 
 * Remove `tests_dir` variable from **hardpy.toml**. 
   [[PR-182](https://github.com/everypinio/hardpy/pull/182)]
@@ -201,7 +206,7 @@ Versions follow [Semantic Versioning](https://semver.org/): `<major>.<minor>.<pa
 * Add the `caused_dut_failure_id` logic to the filling process.
   [[PR-162](https://github.com/everypinio/hardpy/pull/162)]
 
-## HardPy 0.14.0
+## 0.14.0
 
 * Add status display in words depending on the testing status.
   [[PR-165](https://github.com/everypinio/hardpy/pull/165)]
@@ -216,7 +221,7 @@ Versions follow [Semantic Versioning](https://semver.org/): `<major>.<minor>.<pa
 * Add the option to translate the HardPy operator panel using ISO 639 language codes.
   [[PR-159](https://github.com/everypinio/hardpy/pull/159)]
 
-## HardPy 0.13.0
+## 0.13.0
 
 * Change CI settings, add testing of tests on different versions of packages.
   [[PR-157](https://github.com/everypinio/hardpy/pull/157)]
@@ -231,12 +236,12 @@ Versions follow [Semantic Versioning](https://semver.org/): `<major>.<minor>.<pa
   [RFC8628](https://datatracker.ietf.org/doc/html/rfc8628).
   [[PR-152](https://github.com/everypinio/hardpy/pull/152)]
 
-## HardPy 0.12.1
+## 0.12.1
 
 * Fix the situation in which the module and case stop times stop updating when the user stops the tests.
   [[PR-149](https://github.com/everypinio/hardpy/pull/149)]
 
-## HardPy 0.12.0
+## 0.12.0
 
 * Update `test_run` **StandCloudReader** function.
   The `test_run` function provides access to 2 endpoints: `/test_run/{test_run_id}` and `/test_run`.
@@ -263,12 +268,12 @@ Versions follow [Semantic Versioning](https://semver.org/): `<major>.<minor>.<pa
 * Logging to **pytest.ini** is no longer configured during **HardPy** project initialization by `hardpy init`.
   [[PR-122](https://github.com/everypinio/hardpy/pull/122)]
 
-## HardPy 0.11.2
+## 0.11.2
 
 * Fix StandCloud login support in version 3.12+.
   [[PR-134](https://github.com/everypinio/hardpy/pull/134)]
 
-## HardPy 0.11.1
+## 0.11.1
 
 * Change **StandCloud** URL for publish test report to `/test_report`.
   [[PR-131](https://github.com/everypinio/hardpy/pull/131)]
@@ -288,7 +293,7 @@ Versions follow [Semantic Versioning](https://semver.org/): `<major>.<minor>.<pa
 * Change the StandCloud API address to `/hardpy/api`.
   [[PR-125](https://github.com/everypinio/hardpy/pull/125)]
 
-## HardPy 0.11.0
+## 0.11.0
 
 * Remove the internal **HardPy** socket on port 6525. Pytest plugin arguments `--hardpy-sh` and `--hardpy-sp`
   are left for backward compatibility with version below 0.10.1.
@@ -296,12 +301,12 @@ Versions follow [Semantic Versioning](https://semver.org/): `<major>.<minor>.<pa
 * Add the ability to add HTML pages using `HTMLComponent` to dialog boxes and operator messages.
   [[PR-104](https://github.com/everypinio/hardpy/pull/104)]
 
-## HardPy 0.10.1
+## 0.10.1
 
 * Fix **StandCloud** authorization process in Windows.
   [[PR-110](https://github.com/everypinio/hardpy/pull/110)]
 
-## HardPy 0.10.0
+## 0.10.0
 
 * Add the `[stand_cloud]` section to the **hardpy.toml** configuration file.
   [[PR-85](https://github.com/everypinio/hardpy/pull/85)]
@@ -314,7 +319,7 @@ Versions follow [Semantic Versioning](https://semver.org/): `<major>.<minor>.<pa
 * Add alert to control panel by calling `set_alert` method in `HardpyPlugin`.
   [[PR-85](https://github.com/everypinio/hardpy/pull/85)]
 
-## HardPy 0.9.0
+## 0.9.0
 
 * Add the ability to add images to operator messages like a dialog box.
   [[PR-95](https://github.com/everypinio/hardpy/pull/95)]
@@ -330,7 +335,7 @@ Versions follow [Semantic Versioning](https://semver.org/): `<major>.<minor>.<pa
   open before the browser page reloaded.
   [[PR-98](https://github.com/everypinio/hardpy/pull/98)]
 
-## HardPy 0.8.0
+## 0.8.0
 
 * Modify API for dialog boxes with images.
   [[PR-84](https://github.com/everypinio/hardpy/pull/84)]
@@ -350,7 +355,7 @@ Versions follow [Semantic Versioning](https://semver.org/): `<major>.<minor>.<pa
   using the the `--hardpy-clear-database` option of the **pytest-hardpy** plugin.
   [[PR-83](https://github.com/everypinio/hardpy/pull/83)]
 
-## HardPy 0.7.0
+## 0.7.0
 
 * Add an **attempt** marker to indicate the number of attempts to run a test before it passes successfully.
   [[PR-65](https://github.com/everypinio/hardpy/pull/65)]
@@ -377,12 +382,12 @@ Versions follow [Semantic Versioning](https://semver.org/): `<major>.<minor>.<pa
 * Replace the **Flake8** linter with a **Ruff** linter.
   [[PR-58](https://github.com/everypinio/hardpy/pull/58)]
 
-## HardPy 0.6.1
+## 0.6.1
 
 * Fix running tests with a simple `pytest` command.
   [[PR-60](https://github.com/everypinio/hardpy/pull/60)]
 
-## HardPy 0.6.0
+## 0.6.0
 
 In HardPy, the startup principle has changed compared to version 0.5.0 and lower.
 The `hardpy-panel` command is no longer available.
@@ -417,12 +422,12 @@ The HardPy project of version 0.6.0 or later must contain the file **hardpy.toml
 * Add report name generation when serial number is missing.
   [[PR-47](https://github.com/everypinio/hardpy/pull/47)]
 
-## HardPy 0.5.1
+## 0.5.1
 
 * Add the ability to work with cloud couchdb via couchdb config.
   [[PR-51](https://github.com/everypinio/hardpy/pull/51)]
 
-## HardPy 0.5.0
+## 0.5.0
 
 * Refactor dialog box API.
   [[PR-33](https://github.com/everypinio/hardpy/pull/33)]
@@ -437,7 +442,7 @@ The HardPy project of version 0.6.0 or later must contain the file **hardpy.toml
   [[PR-31](https://github.com/everypinio/hardpy/pull/31)]
   [[PR-31](https://github.com/everypinio/hardpy/pull/31)]
 
-## HardPy 0.4.0
+## 0.4.0
 
 * Add base dialog box, text input and numeric input.
   [[PR-24](https://github.com/everypinio/hardpy/pull/24)]
@@ -446,7 +451,7 @@ The HardPy project of version 0.6.0 or later must contain the file **hardpy.toml
 * Add a socket mechanism to transfer data from the uvicorn server to the pytest subprocess.
   [[PR-25](https://github.com/everypinio/hardpy/pull/25)]
 
-## HardPy 0.3.0
+## 0.3.0
 
 * Add implementation of test dependencies without using third-party plugins.
   [[PR-15](https://github.com/everypinio/hardpy/pull/15)]
@@ -455,7 +460,7 @@ The HardPy project of version 0.6.0 or later must contain the file **hardpy.toml
 * Speed up test collection.
   [[PR-12](https://github.com/everypinio/hardpy/pull/12)]
 
-## HardPy 0.2.0
+## 0.2.0
 
 * Add documentation page.
   [[PR-5](https://github.com/everypinio/hardpy/pull/5)]
@@ -463,7 +468,7 @@ The HardPy project of version 0.6.0 or later must contain the file **hardpy.toml
   Users can now only register via the ini file.
   [[PR-6](https://github.com/everypinio/hardpy/pull/6)]
 
-## HardPy 0.1.0
+## 0.1.0
 
 * Add pytest-hardpy and hardpy panel to the package.
   [[PR-1](https://github.com/everypinio/hardpy/pull/1)]
