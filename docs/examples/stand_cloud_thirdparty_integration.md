@@ -2,7 +2,7 @@
 
 This documentation explains how to use the StandCloud integration service via an API key.
 Information on integration options with StandCloud can be found at 
-https://standcloud.io/integration/api/v1/docs.
+https://standcloud.everypin.io/integration/api/v1/docs.
 
 ## Code example
 
@@ -31,7 +31,7 @@ SSL_VERIFY = True
 API_KEY = "your_api_key"
 ########################################
 
-HEALTHCHECK_URL = "https://standcloud.io/integration/api/v1/healthcheck"
+HEALTHCHECK_URL = "https://standcloud.everypin.io/integration/api/v1/healthcheck"
 response = requests.get(HEALTHCHECK_URL, verify=SSL_VERIFY)
 
 if response.status_code != 200:
@@ -46,7 +46,7 @@ header = {
     "Accept": "text/plain",
 }
 
-USER_INFO_URL = "https://standcloud.io/integration/api/v1/test_run"
+USER_INFO_URL = "https://standcloud.everypin.io/integration/api/v1/test_run"
 response = requests.get(USER_INFO_URL, headers=header, verify=SSL_VERIFY)
 
 if response.status_code != 200:

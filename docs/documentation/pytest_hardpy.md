@@ -1012,7 +1012,7 @@ Used to create the **StandCloud** connection addresses.
 **Arguments:**
 
 - `addr` *(str)*: StandCloud service name.
-  For example: **demo.standcloud.io**
+  For example: **standcloud.everypin.io**
 - `api_mode` *(StandCloudAPIMode)*: StandCloud API mode:
   **hardpy** for test stand, **integration** for third-party service.
   Default: `StandCloudAPIMode.HARDPY`
@@ -1047,7 +1047,7 @@ and `test_run` will return the runs whose start number is equal to the `number_o
 **Examples:**
 
 ```python
-    reader = StandCloudReader(StandCloudConnector(addr="demo.standcloud.io"))
+    reader = StandCloudReader(StandCloudConnector(addr="standcloud.everypin.io"))
 
     response = reader.test_run(run_id="0196434d-e8f7-7ce1-81f7-e16f20487494")
     status_code = response.status_code

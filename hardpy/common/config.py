@@ -87,7 +87,7 @@ class StandCloudConfig(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    address: str = "standcloud.io"
+    address: str = "standcloud.everypin.io"
     connection_only: bool = False
     autosync: bool = False
     autosync_timeout: int = 30  # 30 minutes
