@@ -43,6 +43,7 @@ class FrontendConfig(BaseModel):
     port: int = 8000
     language: str = "en"
     url: str = "localhost"
+    full_size_button: bool = True
 
 
 class StandCloudConfig(BaseModel):
