@@ -472,6 +472,8 @@ function App(): JSX.Element {
     return <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>{tags}</div>;
   };
 
+  const useBigButton = hardpyConfig?.frontend?.full_size_button !== false;
+
   return (
     <div className="App">
       <ReloadAlert reload_timeout_s={3} />
@@ -568,20 +570,90 @@ function App(): JSX.Element {
         {renderNavStatusTags()}
       </div>
 
-      {/* Tests panel */}
-      <div className={Classes.DRAWER_BODY} style={{ marginBottom: "140px" }}>
+      {/* Main content area with test suites and results */}
+      <div
+        className={Classes.DRAWER_BODY}
+        style={{
+          marginBottom: "60px",
+          paddingBottom: useBigButton ? "120px" : "80px",
+        }}
+      >
         {renderDbContent()}
       </div>
 
-      {/* Footer */}
-
-      <div className={`${Classes.DRAWER_FOOTER} hardpy-footer`}>
-        <div className="hardpy-footer-progress">
-          <ProgressView percentage={lastProgress} status={lastRunStatus} />
-        </div>
-        <div className="hardpy-footer-button">
-          <StartStopButton testing_status={lastRunStatus} />
-        </div>
+      {/* Footer with progress bar and control buttons */}
+      <div
+        className={Classes.DRAWER_FOOTER}
+        style={{
+          width: "100%",
+          display: "flex",
+          flexDirection: "column",
+          position: "fixed",
+          bottom: 0,
+          background: Colors.LIGHT_GRAY5,
+          margin: "auto",
+        }}
+      >
+        {useBigButton ? (
+          <>
+            <div
+              style={{
+                width: "100%",
+                padding: "10px 20px 0px 20px",
+              }}
+            >
+              <ProgressView
+                percentage={lastProgress}
+                status={lastRunStatus}
+              />
+            </div>
+            <div
+              style={{
+                width: "100%",
+                padding: "10px 20px",
+                display: "flex",
+                justifyContent: "center",
+              }}
+            >
+              <div style={{ width: "100%" }}>
+                <StartStopButton
+                  testing_status={lastRunStatus}
+                  useBigButton={true}
+                />
+              </div>
+            </div>
+          </>
+        ) : (
+          <div
+            style={{
+              width: "100%",
+              display: "flex",
+              flexDirection: "row",
+            }}
+          >
+            <div
+              style={{
+                flexDirection: "column",
+                flexGrow: 1,
+                flexShrink: 1,
+                marginTop: "auto",
+                marginBottom: "auto",
+                padding: "20px",
+              }}
+            >
+              <ProgressView
+                percentage={lastProgress}
+                status={lastRunStatus}
+              />
+            </div>
+            <div style={{ flexDirection: "column" }}>
+              <StartStopButton
+                testing_status={lastRunStatus}
+                useBigButton={false}
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Test Config Selection Overlay */}
