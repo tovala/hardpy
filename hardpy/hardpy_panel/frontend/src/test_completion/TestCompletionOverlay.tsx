@@ -48,8 +48,13 @@ const TestCompletionOverlay: React.FC<TestCompletionOverlayProps> = ({
       overlay.focus();
     }
 
+    // Only dismiss on confirm-style keys. Scroll keys (PageUp/Down, arrows,
+    // Home/End) must be passed through so the operator can review a long list
+    // of failed cases.
+    const DISMISS_KEYS = new Set(["Enter", " ", "Spacebar", "Escape", "Esc"]);
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (isVisible) {
+      if (!isVisible) return;
+      if (DISMISS_KEYS.has(e.key)) {
         e.preventDefault();
         onDismiss();
       }
@@ -108,6 +113,9 @@ const TestCompletionOverlay: React.FC<TestCompletionOverlayProps> = ({
     marginTop: "20px",
     width: "80%",
     maxWidth: "800px",
+    cursor: "default", // override the parent overlay's pointer cursor inside the scroll area
+    scrollbarColor: "rgba(255,255,255,0.6) rgba(255,255,255,0.1)", // visible against the red/green backdrop
+    scrollbarWidth: "auto",
   };
 
   const caseItemStyle: React.CSSProperties = {
@@ -147,9 +155,18 @@ const TestCompletionOverlay: React.FC<TestCompletionOverlayProps> = ({
       </div>
 
       {!testPassed && failedTestCases.length > 0 && (
-        <div style={failedCasesStyle}>
+        <div
+          style={failedCasesStyle}
+          // Stop click/touch/scroll events from bubbling to the overlay's
+          // click-to-dismiss handler. Operator can scroll and select text
+          // inside the failure list without dismissing the modal.
+          onClick={(e) => e.stopPropagation()}
+          onWheel={(e) => e.stopPropagation()}
+          onTouchStart={(e) => e.stopPropagation()}
+          onTouchMove={(e) => e.stopPropagation()}
+        >
           <h3 style={{ marginTop: 0, marginBottom: "20px", fontSize: "24px" }}>
-            Failed Test Cases:
+            Failed Test Cases ({failedTestCases.length}):
           </h3>
           {failedTestCases.map((testCase, index) => (
             <div key={index} style={caseItemStyle}>
