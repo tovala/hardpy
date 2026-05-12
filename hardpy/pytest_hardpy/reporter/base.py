@@ -30,6 +30,11 @@ class BaseReporter:
 
         Update a document without writing to the database.
 
+        Statestore keeps the raw value (preserving any ``i18n:`` prefixed keys
+        for live frontend translation). Runstore receives the value with any
+        ``i18n:`` keys rendered to prose in ``[frontend].report_language``, so
+        persisted/uploaded reports stay human-readable.
+
         Args:
             key (str): document key
             value: document value
@@ -44,14 +49,30 @@ class BaseReporter:
         if runstore_only and statestore_only:
             msg = "Both runstore_only and statestore_only cannot be True"
             raise ValueError(msg)
+        runstore_value = self._render_for_runstore(value)
         if runstore_only:
-            self._runstore.update_doc_value(key, value)
+            self._runstore.update_doc_value(key, runstore_value)
             return
         if statestore_only:
             self._statestore.update_doc_value(key, value)
             return
-        self._runstore.update_doc_value(key, value)
+        self._runstore.update_doc_value(key, runstore_value)
         self._statestore.update_doc_value(key, value)
+
+    def _render_for_runstore(self, value: Any) -> Any:  # noqa: ANN401
+        """Render ``i18n:`` keys in ``value`` to prose for the persisted report.
+
+        Fast-path returns ``value`` unchanged when the translation catalog is
+        empty (no fixture-side translations configured).
+        """
+        from hardpy.common.config import ConfigManager
+        from hardpy.pytest_hardpy.i18n import get_catalog
+
+        catalog = get_catalog()
+        if catalog.is_empty:
+            return value
+        lang = ConfigManager.get_config().frontend.report_language
+        return catalog.render(value, lang)
 
     def set_alert(self, alert: str) -> None:
         """Set alert message.

@@ -1,0 +1,70 @@
+{
+  "app": {
+    "title": "HardPy အော်ပရေတာ ပန်နယ်",
+    "lastLaunch": "နောက်ဆုံးစတင်ချိန်:",
+    "duration": "ကြာချိန်",
+    "seconds": "စက္ကန့်",
+    "soundOn": "အသံ ဖွင့်ပါ",
+    "soundOff": "အသံ ပိတ်ပါ",
+    "debugOn": "ဒီဘတ်မုဒ် ဖွင့်ပါ",
+    "debugOff": "ဒီဘတ်မုဒ် ပိတ်ပါ",
+    "connection": "ချိတ်ဆက်နေသည်... 🧐🔎",
+    "dbError": "ဒေတာဘေ့စ် ချိတ်ဆက်မှု အမှား 🙅🏽‍♀️🚫",
+    "noEntries": "ဒေတာဘေ့စ်တွင် မှတ်တမ်းမရှိ 🙅🏽‍♀️🚫",
+    "status": {
+      "ready": "အသင့်",
+      "run": "လုပ်ဆောင်နေ",
+      "passed": "အောင်မြင်",
+      "failed": "မအောင်မြင်",
+      "stopped": "ရပ်ထား",
+      "unknown": "မသိ"
+    },
+    "version": "ဗားရှင်း",
+    "switchLanguage": "ဘာသာစကား ပြောင်းပါ",
+    "completion": {
+      "pass": "အောင်",
+      "fail": "ကျရှုံး",
+      "failedTestCasesHeader": "ကျရှုံးသော စမ်းသပ်ချက်များ ({{count}}):",
+      "clickToDismiss": "မည်သည့်နေရာတွင်မဆို နှိပ်၍ ပိတ်ပါ"
+    }
+  },
+  "button": {
+    "start": "စတင်ပါ",
+    "stop": "ရပ်ပါ",
+    "confirm": "အတည်ပြုပါ"
+  },
+  "error": {
+    "dbConnectionTitle": "ဒေတာဘေ့စ် ချိတ်ဆက်မှု အမှား",
+    "dbConnectionMessage": "ဒေတာဘေ့စ်နှင့် ချိတ်ဆက်၍မရပါ"
+  },
+  "operatorDialog": {
+    "defaultTitle": "မက်ဆေ့ချ်",
+    "imageAlt": "အော်ပရေတာ မက်ဆေ့ချ် ပုံ",
+    "htmlCodeTitle": "HTML ကုဒ်",
+    "htmlLinkTitle": "HTML လင့်ခ်",
+    "enterAnswer": "အဖြေထည့်ပါ",
+    "fieldNotEmpty": "ဤနေရာသည် ဗလာမဖြစ်ရပါ",
+    "notificationTitle": "အကြောင်းကြားချက်",
+    "notificationDesc": "ဝင်းဒိုးပိတ်ပြီ။ စမ်းသပ်မှု ရပ်လိုက်ပါပြီ။",
+    "numericInputError": "ဂဏန်းတစ်ခု ထည့်ပါ",
+    "radioButtonError": "တစ်ခု ရွေးပါ",
+    "checkboxError": "အနည်းဆုံး တစ်ခု ရွေးပါ",
+    "pass": "အောင်",
+    "fail": "ကျရှုံး"
+  },
+  "suiteList": {
+    "loadingTests": "စမ်းသပ်ချက်များ တင်နေသည်... 🤔",
+    "refreshHint": "စာမျက်နှာကို ပြန်ဖွင့်ကြည့်ပါ",
+    "standName": "စတန် အမည်",
+    "status": "အခြေအနေ",
+    "startTime": "စတင်ချိန်",
+    "finishTime": "ပြီးချိန်",
+    "alert": "သတိပေးချက်"
+  },
+  "testSuite": {
+    "nameColumn": "အမည်",
+    "dataColumn": "ဒေတာ",
+    "loading": "တင်နေသည်...",
+    "stubName": "စမ်းသပ်ချက် အစုံ"
+  }
+}

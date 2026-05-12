@@ -1,8 +1,9 @@
+from __future__ import annotations
+
 import json
 from pathlib import Path
-from typing import List
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class AppStatus(BaseModel):
@@ -15,12 +16,26 @@ class AppStatus(BaseModel):
     unknown: str
 
 
+class AppCompletion(BaseModel):
+    """A class representing test-completion overlay translations.
+
+    ``pass_`` aliases the JSON key ``pass`` (a Python reserved word).
+    """
+
+    pass_: str = Field(alias="pass")
+    fail: str
+    failedTestCasesHeader: str
+    clickToDismiss: str
+
+    model_config = {"populate_by_name": True, "extra": "allow"}
+
+
 class OperatorDialog(BaseModel):
     """A class representing an operator dialog.
 
-    It contains attributes for default title, image alt text, HTML code title, HTML link title,
-    enter answer text, field not empty text, notification title, notification description,
-    numeric input error text, radio button error text, and checkbox error text.
+    Holds the default title, image alt text, HTML code / link titles, the
+    answer prompt, the field-not-empty validation, the notification title /
+    description, and the per-widget input error messages.
 
     Attributes:
         defaultTitle (str): The default title of the dialog.
@@ -91,6 +106,8 @@ class App(BaseModel):
         dbError (str): The database error message.
         noEntries (str): The message for no entries in the database.
         status (AppStatus): The status of the application.
+        switchLanguage (Optional[str]): Cog-menu language toggle label (NEX-1206).
+        completion (Optional[AppCompletion]): Test-completion overlay labels (NEX-1206).
     """
 
     title: str
@@ -105,6 +122,10 @@ class App(BaseModel):
     dbError: str
     noEntries: str
     status: AppStatus
+    switchLanguage: str | None = None
+    completion: AppCompletion | None = None
+
+    model_config = {"extra": "allow"}
 
 
 class SuiteList(BaseModel):
@@ -165,7 +186,7 @@ class TranslationModel(BaseModel):
     testSuite: TestSuite
 
 
-def validate_translation_file(file_path: Path) -> List[str]:
+def validate_translation_file(file_path: Path) -> list[str]:
     """Validate a single translation file against the model."""
     errors = []
     try:

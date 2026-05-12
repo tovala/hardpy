@@ -8,6 +8,7 @@ import { withTranslation, WithTranslation } from "react-i18next";
 
 import { TestItem, TestSuiteComponent } from "./TestSuite";
 import StartOperatorMsgDialog from "./OperatorMsg";
+import { TranslatedText } from "../TranslatedText";
 
 /**
  * Set of suites
@@ -167,10 +168,13 @@ export class SuiteList extends React.Component<Props, State> {
     return (
       <>
         <div>
-          <H1>{this.props.currentTestConfig || db_state.name}</H1>
+          <H1>
+            <TranslatedText value={this.props.currentTestConfig || db_state.name || ""} />
+          </H1>
           {db_state.test_stand && (
             <Tag minimal multiline style={TAG_ELEMENT_STYLE}>
-              {t("suiteList.standName")}: {db_state.test_stand?.name}
+              {t("suiteList.standName")}:{" "}
+              <TranslatedText value={db_state.test_stand?.name ?? ""} />
             </Tag>
           )}
           {start && (
@@ -185,7 +189,7 @@ export class SuiteList extends React.Component<Props, State> {
           )}
           {alert && (
             <Tag minimal multiline style={TAG_ELEMENT_STYLE}>
-              {t("suiteList.alert")}: {alert}
+              {t("suiteList.alert")}: <TranslatedText value={alert} />
             </Tag>
           )}
           {db_state.test_stand?.info &&
@@ -194,10 +198,12 @@ export class SuiteList extends React.Component<Props, State> {
                 {Object.entries(db_state.test_stand.info).map(
                   ([key, value]) => (
                     <Tag key={key} minimal multiline style={TAG_ELEMENT_STYLE}>
-                      {db_state.test_stand?.name} {key}:{" "}
-                      {typeof value === "string"
-                        ? value
-                        : JSON.stringify(value)}
+                      <TranslatedText value={db_state.test_stand?.name ?? ""} /> {key}:{" "}
+                      {typeof value === "string" ? (
+                        <TranslatedText value={value} />
+                      ) : (
+                        JSON.stringify(value)
+                      )}
                     </Tag>
                   )
                 )}

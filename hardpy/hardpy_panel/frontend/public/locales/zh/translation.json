@@ -19,7 +19,14 @@
         "stopped": "已停止",
         "unknown": "未知"
       },
-      "version": "版本"
+      "version": "版本",
+      "switchLanguage": "切换语言",
+      "completion": {
+        "pass": "通过",
+        "fail": "失败",
+        "failedTestCasesHeader": "失败的测试用例 ({{count}}):",
+        "clickToDismiss": "点击任何位置以关闭"
+      }
   },
   "button": {
     "start": "开始",

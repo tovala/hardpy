@@ -5,6 +5,7 @@ import * as React from "react";
 import { Tag } from "@blueprintjs/core";
 
 import _ from "lodash";
+import { TranslatedText } from "../TranslatedText";
 
 interface Measurement {
   name?: string;
@@ -111,12 +112,12 @@ export function TestData(props: Readonly<Props>): React.ReactElement {
               multiline={true}
               intent="primary"
             >
-              {value}
+              <TranslatedText value={value} />
             </Tag>
           )
         );
       })}
-      
+
       {/* Render assertions last. assertion_msg is the clean operator-facing
           user message (NEX-1190); the full longrepr with stack frames lives in
           assertion_details on the case and is for the saved report only. */}
@@ -128,7 +129,7 @@ export function TestData(props: Readonly<Props>): React.ReactElement {
           multiline={true}
           intent="warning"
         >
-          {props.assertion_msg}
+          <TranslatedText value={props.assertion_msg} />
         </Tag>
       )}
     </div>
