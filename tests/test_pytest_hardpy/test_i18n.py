@@ -240,3 +240,39 @@ class TestCatalogRender:
         assert c.render("i18n:errors.printer_not_found", "en") == "errors.printer_not_found"
         # Plain strings still pass through
         assert c.render("plain", "en") == "plain"
+
+    def test_missing_arg_leaves_placeholder_literal(self, catalog: Catalog):
+        # Template wants {{name}} but the caller provided no args — the literal
+        # placeholder stays in the output as a visible debug signal. Matches
+        # react-i18next's default behavior so the frontend renders the same way.
+        result = catalog.render("i18n:errors.printer_not_found", "en")
+        assert result == "Printer {{name}} not found"
+
+    def test_missing_arg_with_other_args_leaves_placeholder(self, catalog: Catalog):
+        # Some args provided, but not the one the template needs.
+        result = catalog.render(
+            'i18n:errors.printer_not_found{"unrelated":"x"}', "en"
+        )
+        assert result == "Printer {{name}} not found"
+
+    def test_extra_args_silently_ignored(self, catalog: Catalog):
+        # Template has no placeholders; extras don't appear anywhere.
+        result = catalog.render('i18n:errors.no_args{"name":"X","junk":"Y"}', "en")
+        assert result == "Static error"
+
+    def test_partial_arg_set_substitutes_what_it_can(self, tmp_path: Path):
+        # Two placeholders, only one arg — substituted one fills, missing one
+        # stays as literal {{var}}.
+        tests_dir = _write_catalog(
+            tmp_path,
+            {
+                "common.toml": """
+                    [en.info]
+                    cycle = "Cycle {{n}} of {{total}}"
+                """,
+            },
+        )
+        c = Catalog()
+        c.load(tests_dir)
+        result = c.render('i18n:info.cycle{"n":3}', "en")
+        assert result == "Cycle 3 of {{total}}"
