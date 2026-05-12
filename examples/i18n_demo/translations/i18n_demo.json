@@ -1,0 +1,17 @@
+{
+  "en": {
+    "errors": {
+      "printer_not_found": "Demo fixture: label printer {{name}} unreachable"
+    }
+  },
+  "zh": {
+    "errors": {
+      "printer_not_found": "演示工位: 标签打印机 {{name}} 无响应"
+    }
+  },
+  "th": {
+    "errors": {
+      "printer_not_found": "สถานีสาธิต: เครื่องพิมพ์ฉลาก {{name}} ไม่ตอบสนอง"
+    }
+  }
+}

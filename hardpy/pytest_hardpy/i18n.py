@@ -13,16 +13,16 @@ in the operator's chosen language. The runstore-bound write goes through
 in ``report_language`` — engineering report consumers see human text without
 needing to understand the i18n prefix scheme.
 
-Catalog files live at ``<tests_dir>/translations/*.toml``. ``common.toml``
+Catalog files live at ``<tests_dir>/translations/*.json``. ``common.json``
 loads first; other files merge alphabetically, each overriding earlier entries.
-Catalog TOML structure is language-first nested namespaces, mirroring
-react-i18next's expectation::
+Catalog JSON structure is language-first nested namespaces, matching the same
+shape the chrome catalog at ``frontend/public/locales/<lang>/translation.json``
+uses::
 
-    [zh.errors]
-    printer_not_found = "找不到打印机 {{name}}"
-
-    [en.errors]
-    printer_not_found = "Printer {{name}} not found"
+    {
+      "zh": { "errors": { "printer_not_found": "找不到打印机 {{name}}" } },
+      "en": { "errors": { "printer_not_found": "Printer {{name}} not found" } }
+    }
 """
 from __future__ import annotations
 
@@ -31,8 +31,6 @@ import re
 from logging import getLogger
 from pathlib import Path
 from typing import Any
-
-import tomli
 
 logger = getLogger(__name__)
 
@@ -99,9 +97,9 @@ class Catalog:
         self._loaded_from: Path | None = None
 
     def load(self, tests_path: Path) -> None:
-        """Read and merge every ``*.toml`` under ``tests_path/translations/``.
+        """Read and merge every ``*.json`` under ``tests_path/translations/``.
 
-        ``common.toml`` is loaded first; remaining files merge alphabetically,
+        ``common.json`` is loaded first; remaining files merge alphabetically,
         each overriding earlier entries. Missing directory is not an error —
         catalog is just empty.
         """
@@ -112,16 +110,19 @@ class Catalog:
             self._loaded_from = None
             return
 
-        files = sorted(translations_dir.glob("*.toml"))
-        files.sort(key=lambda p: (p.name != "common.toml", p.name))
+        files = sorted(translations_dir.glob("*.json"))
+        files.sort(key=lambda p: (p.name != "common.json", p.name))
 
         merged: dict[str, Any] = {}
         for path in files:
             try:
-                with path.open("rb") as f:
-                    data = tomli.load(f)
-            except (OSError, tomli.TOMLDecodeError) as exc:
+                with path.open("r", encoding="utf-8") as f:
+                    data = json.load(f)
+            except (OSError, json.JSONDecodeError) as exc:
                 logger.warning("Failed to load %s: %s", path, exc)
+                continue
+            if not isinstance(data, dict):
+                logger.warning("Catalog file %s top-level is not an object; skipping", path)
                 continue
             _deep_merge(merged, data)
 

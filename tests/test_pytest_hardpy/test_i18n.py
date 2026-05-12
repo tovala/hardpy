@@ -3,8 +3,9 @@
 """Unit tests for the translation catalog and i18n: prefix parser."""
 from __future__ import annotations
 
-import textwrap
+import json
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -51,13 +52,19 @@ class TestParseI18nKey:
         assert args == {}
 
 
-def _write_catalog(tmp_path: Path, files: dict[str, str]) -> Path:
-    """Write a fake tests dir with translations/ subdir. Returns the tests dir."""
+def _write_catalog(tmp_path: Path, files: dict[str, dict[str, Any]]) -> Path:
+    """Write a fake tests dir with translations/ subdir. Returns the tests dir.
+
+    ``files`` maps filename to its JSON content as a Python dict.
+    """
     tests_dir = tmp_path / "tests_root"
     translations = tests_dir / "translations"
     translations.mkdir(parents=True)
     for name, content in files.items():
-        (translations / name).write_text(textwrap.dedent(content), encoding="utf-8")
+        (translations / name).write_text(
+            json.dumps(content, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
     return tests_dir
 
 
@@ -72,13 +79,10 @@ class TestCatalogLoad:
         tests_dir = _write_catalog(
             tmp_path,
             {
-                "common.toml": """
-                    [en.errors]
-                    printer_not_found = "Printer {{name}} not found"
-
-                    [zh.errors]
-                    printer_not_found = "找不到打印机 {{name}}"
-                """,
+                "common.json": {
+                    "en": {"errors": {"printer_not_found": "Printer {{name}} not found"}},
+                    "zh": {"errors": {"printer_not_found": "找不到打印机 {{name}}"}},
+                },
             },
         )
         c = Catalog()
@@ -91,15 +95,21 @@ class TestCatalogLoad:
         tests_dir = _write_catalog(
             tmp_path,
             {
-                "common.toml": """
-                    [en.errors]
-                    printer_not_found = "Common: printer missing"
-                    serial_missing = "Scan serial number"
-                """,
-                "hellraiser.toml": """
-                    [en.errors]
-                    printer_not_found = "Hellraiser: plug in label printer"
-                """,
+                "common.json": {
+                    "en": {
+                        "errors": {
+                            "printer_not_found": "Common: printer missing",
+                            "serial_missing": "Scan serial number",
+                        }
+                    },
+                },
+                "hellraiser.json": {
+                    "en": {
+                        "errors": {
+                            "printer_not_found": "Hellraiser: plug in label printer",
+                        }
+                    },
+                },
             },
         )
         c = Catalog()
@@ -113,31 +123,35 @@ class TestCatalogLoad:
         tests_dir = _write_catalog(
             tmp_path,
             {
-                "aaa_other.toml": """
-                    [en.foo]
-                    bar = "from aaa_other"
-                """,
-                "common.toml": """
-                    [en.foo]
-                    bar = "from common"
-                """,
+                "aaa_other.json": {"en": {"foo": {"bar": "from aaa_other"}}},
+                "common.json": {"en": {"foo": {"bar": "from common"}}},
             },
         )
         c = Catalog()
         c.load(tests_dir)
-        # common.toml loads first; aaa_other.toml overrides
+        # common.json loads first; aaa_other.json overrides
         assert c.data["en"]["foo"]["bar"] == "from aaa_other"
 
-    def test_malformed_toml_is_skipped(self, tmp_path: Path):
-        tests_dir = _write_catalog(
-            tmp_path,
-            {
-                "bad.toml": "this is not [valid toml [[[",
-                "good.toml": """
-                    [en.foo]
-                    bar = "valid"
-                """,
-            },
+    def test_malformed_json_is_skipped(self, tmp_path: Path):
+        tests_dir = tmp_path / "tests_root"
+        translations = tests_dir / "translations"
+        translations.mkdir(parents=True)
+        (translations / "bad.json").write_text("this is not [valid json [[[", encoding="utf-8")
+        (translations / "good.json").write_text(
+            json.dumps({"en": {"foo": {"bar": "valid"}}}), encoding="utf-8"
+        )
+        c = Catalog()
+        c.load(tests_dir)
+        assert c.data["en"]["foo"]["bar"] == "valid"
+
+    def test_non_object_top_level_is_skipped(self, tmp_path: Path):
+        tests_dir = tmp_path / "tests_root"
+        translations = tests_dir / "translations"
+        translations.mkdir(parents=True)
+        # An array at the top level isn't a valid catalog
+        (translations / "weird.json").write_text(json.dumps(["en", "zh"]), encoding="utf-8")
+        (translations / "good.json").write_text(
+            json.dumps({"en": {"foo": {"bar": "valid"}}}), encoding="utf-8"
         )
         c = Catalog()
         c.load(tests_dir)
@@ -150,20 +164,21 @@ class TestCatalogRender:
         tests_dir = _write_catalog(
             tmp_path,
             {
-                "common.toml": """
-                    [en.errors]
-                    printer_not_found = "Printer {{name}} not found"
-                    no_args = "Static error"
-
-                    [en.tests]
-                    printer_check = "Printer Check"
-
-                    [zh.errors]
-                    printer_not_found = "找不到打印机 {{name}}"
-
-                    [zh.tests]
-                    printer_check = "打印机检查"
-                """,
+                "common.json": {
+                    "en": {
+                        "errors": {
+                            "printer_not_found": "Printer {{name}} not found",
+                            "no_args": "Static error",
+                        },
+                        "tests": {"printer_check": "Printer Check"},
+                    },
+                    "zh": {
+                        "errors": {
+                            "printer_not_found": "找不到打印机 {{name}}",
+                        },
+                        "tests": {"printer_check": "打印机检查"},
+                    },
+                },
             },
         )
         c = Catalog()
@@ -266,10 +281,7 @@ class TestCatalogRender:
         tests_dir = _write_catalog(
             tmp_path,
             {
-                "common.toml": """
-                    [en.info]
-                    cycle = "Cycle {{n}} of {{total}}"
-                """,
+                "common.json": {"en": {"info": {"cycle": "Cycle {{n}} of {{total}}"}}},
             },
         )
         c = Catalog()

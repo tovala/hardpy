@@ -1,0 +1,65 @@
+{
+  "en": {
+    "errors": {
+      "printer_not_found": "Printer {{name}} not found — plug in printer",
+      "serial_missing": "Scan serial number to continue"
+    },
+    "tests": {
+      "boot": "Boot Check",
+      "printer_check": "Printer Check",
+      "serial_check": "Serial Number Check",
+      "cycle_check": "Cycle Counter Check",
+      "shutdown_check": "Shutdown Sequence"
+    },
+    "modules": {
+      "module_basic": "Basic Demo",
+      "module_advanced": "Advanced Demo"
+    },
+    "info": {
+      "ready": "Station ready",
+      "cycle": "Running cycle {{n}} of {{total}}"
+    }
+  },
+  "zh": {
+    "errors": {
+      "printer_not_found": "找不到打印机 {{name}}, 请连接打印机",
+      "serial_missing": "扫描序列号以继续"
+    },
+    "tests": {
+      "boot": "启动检查",
+      "printer_check": "打印机检查",
+      "serial_check": "序列号检查",
+      "cycle_check": "循环计数器检查",
+      "shutdown_check": "关机流程"
+    },
+    "modules": {
+      "module_basic": "基础演示",
+      "module_advanced": "高级演示"
+    },
+    "info": {
+      "ready": "工位就绪",
+      "cycle": "正在运行第 {{n}} 个循环 (共 {{total}} 个)"
+    }
+  },
+  "th": {
+    "errors": {
+      "printer_not_found": "ไม่พบเครื่องพิมพ์ {{name}} - กรุณาเสียบสายเครื่องพิมพ์",
+      "serial_missing": "สแกนหมายเลขเครื่องเพื่อดำเนินการต่อ"
+    },
+    "tests": {
+      "boot": "ตรวจสอบการเริ่มต้น",
+      "printer_check": "ตรวจสอบเครื่องพิมพ์",
+      "serial_check": "ตรวจสอบหมายเลขเครื่อง",
+      "cycle_check": "ตรวจสอบตัวนับรอบ",
+      "shutdown_check": "ขั้นตอนการปิดเครื่อง"
+    },
+    "modules": {
+      "module_basic": "การสาธิตพื้นฐาน",
+      "module_advanced": "การสาธิตขั้นสูง"
+    },
+    "info": {
+      "ready": "สถานีพร้อม",
+      "cycle": "กำลังรันรอบที่ {{n}} จาก {{total}}"
+    }
+  }
+}
