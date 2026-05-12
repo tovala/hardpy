@@ -3,6 +3,7 @@
 
 import * as React from "react";
 import { Classes } from "@blueprintjs/core";
+import { TranslatedText } from "../TranslatedText";
 
 interface FailedTestCase {
   moduleName: string;
@@ -147,12 +148,12 @@ const TestCompletionOverlay: React.FC<TestCompletionOverlayProps> = ({
       id="test-completion-overlay"
       tabIndex={-1}
     >
-      <div style={titleStyle}>
-        {testPassed ? "PASS" : "FAIL"}
-      </div>
-      <div style={subtitleStyle}>
-        {testPassed ? "通过" : "失败"}
-      </div>
+      <TranslatedText
+        tKey={testPassed ? "app.completion.pass" : "app.completion.fail"}
+        primaryStyle={titleStyle}
+        secondaryStyle={subtitleStyle}
+        noDefaultSecondaryStyle
+      />
 
       {!testPassed && failedTestCases.length > 0 && (
         <div
@@ -166,16 +167,20 @@ const TestCompletionOverlay: React.FC<TestCompletionOverlayProps> = ({
           onTouchMove={(e) => e.stopPropagation()}
         >
           <h3 style={{ marginTop: 0, marginBottom: "20px", fontSize: "24px" }}>
-            Failed Test Cases ({failedTestCases.length}):
+            <TranslatedText
+              tKey="app.completion.failedTestCasesHeader"
+              args={{ count: failedTestCases.length }}
+            />
           </h3>
           {failedTestCases.map((testCase, index) => (
             <div key={index} style={caseItemStyle}>
               <div style={caseNameStyle}>
-                {testCase.moduleName} → {testCase.caseName}
+                <TranslatedText value={testCase.moduleName} /> →{" "}
+                <TranslatedText value={testCase.caseName} />
               </div>
               {testCase.assertionMsg && (
                 <div style={assertionStyle}>
-                  {testCase.assertionMsg}
+                  <TranslatedText value={testCase.assertionMsg} />
                 </div>
               )}
             </div>
@@ -185,11 +190,13 @@ const TestCompletionOverlay: React.FC<TestCompletionOverlayProps> = ({
 
       <div style={{
         position: "absolute",
-        bottom: "40px",
-        fontSize: "16px",
-        opacity: 0.8
+        bottom: "16px",
+        right: "20px",
+        fontSize: "12px",
+        opacity: 0.7,
+        whiteSpace: "nowrap",
       }}>
-        Click anywhere to dismiss
+        <TranslatedText tKey="app.completion.clickToDismiss" />
       </div>
     </div>
   );

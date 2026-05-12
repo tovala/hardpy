@@ -1,0 +1,23 @@
+title = "HardPy TOML config"
+tests_name = "i18n Demo"
+# Show the PASS/FAIL completion overlay so the i18n: rendering of the title
+# and failed-test-cases list is exercised too.
+enable_test_pass_fail_modal = true
+
+[database]
+user = "dev"
+password = "dev"
+host = "localhost"
+port = 5984
+
+[frontend]
+host = "localhost"
+port = 8000
+# Primary display language. Drives chrome (react-i18next) + test content.
+language = "zh"
+# Secondary stacked below primary in smaller / lighter style.
+# Comment out for a single-row (existing) render.
+secondary_display_language = "en"
+# Canonical language for the persisted/uploaded report (runstore + StandCloud).
+# Statestore keeps raw i18n: keys for live operator-panel translation.
+report_language = "en"

@@ -1,0 +1,13 @@
+# Per-fixture translation overrides for the i18n demo.
+# Shadows keys from common.toml; adds fixture-specific entries.
+
+[en.errors]
+# Override common's generic "plug in printer" message with a fixture-specific
+# hint (real fixture might reference its label printer model).
+printer_not_found = "Demo fixture: label printer {{name}} unreachable"
+
+[zh.errors]
+printer_not_found = "演示工位: 标签打印机 {{name}} 无响应"
+
+[th.errors]
+printer_not_found = "สถานีสาธิต: เครื่องพิมพ์ฉลาก {{name}} ไม่ตอบสนอง"

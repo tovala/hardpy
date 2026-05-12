@@ -1,8 +1,8 @@
 import json
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class AppStatus(BaseModel):
@@ -13,6 +13,20 @@ class AppStatus(BaseModel):
     failed: str
     stopped: str
     unknown: str
+
+
+class AppCompletion(BaseModel):
+    """A class representing test-completion overlay translations.
+
+    ``pass_`` aliases the JSON key ``pass`` (a Python reserved word).
+    """
+
+    pass_: str = Field(alias="pass")
+    fail: str
+    failedTestCasesHeader: str
+    clickToDismiss: str
+
+    model_config = {"populate_by_name": True, "extra": "allow"}
 
 
 class OperatorDialog(BaseModel):
@@ -91,6 +105,8 @@ class App(BaseModel):
         dbError (str): The database error message.
         noEntries (str): The message for no entries in the database.
         status (AppStatus): The status of the application.
+        switchLanguage (Optional[str]): Cog-menu language toggle label (NEX-1206).
+        completion (Optional[AppCompletion]): Test-completion overlay labels (NEX-1206).
     """
 
     title: str
@@ -105,6 +121,10 @@ class App(BaseModel):
     dbError: str
     noEntries: str
     status: AppStatus
+    switchLanguage: Optional[str] = None
+    completion: Optional[AppCompletion] = None
+
+    model_config = {"extra": "allow"}
 
 
 class SuiteList(BaseModel):

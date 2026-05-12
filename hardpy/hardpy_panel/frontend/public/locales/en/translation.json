@@ -19,7 +19,14 @@
       "stopped": "stopped",
       "unknown": "unknown"
     },
-    "version": "Version"
+    "version": "Version",
+    "switchLanguage": "Switch language",
+    "completion": {
+      "pass": "PASS",
+      "fail": "FAIL",
+      "failedTestCasesHeader": "Failed Test Cases ({{count}}):",
+      "clickToDismiss": "Click anywhere to dismiss"
+    }
   },
   "button": {
     "start": "Start",

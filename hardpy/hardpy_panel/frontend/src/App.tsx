@@ -27,6 +27,8 @@ import ReloadAlert from "./restart_alert/RestartAlert";
 import PlaySound from "./hardpy_test_view/PlaySound";
 import TestConfigOverlay from "./config_selection/TestConfigOverlay";
 import TestCompletionOverlay from "./test_completion/TestCompletionOverlay";
+import { LanguageProvider } from "./TranslatedText";
+import { getTestCatalogLanguages } from "./i18n";
 
 import { useAllDocs } from "use-pouchdb";
 
@@ -61,7 +63,7 @@ const isValidStatus = (status: string): status is StatusKey => {
  * @returns {JSX.Element} The main application component.
  */
 function App(): JSX.Element {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [use_end_test_sound, setUseEndTestSound] = React.useState(false);
   const [use_debug_info, setUseDebugInfo] = React.useState(false);
 
@@ -393,6 +395,69 @@ function App(): JSX.Element {
     );
   };
 
+  const primaryConfigLang: string = hardpyConfig?.frontend?.language ?? "en";
+  const secondaryConfigLang: string | null =
+    hardpyConfig?.frontend?.secondary_display_language ?? null;
+
+  // Track catalog-supplied languages; refreshes after /api/translations loads.
+  const [catalogLanguages, setCatalogLanguages] = React.useState<string[]>(
+    getTestCatalogLanguages(),
+  );
+  React.useEffect(() => {
+    const onCatalogLoaded = (langs?: string[]) => {
+      setCatalogLanguages(langs ?? getTestCatalogLanguages());
+    };
+    const onResourceLoaded = () => setCatalogLanguages(getTestCatalogLanguages());
+    i18n.on("hardpyCatalogLoaded" as any, onCatalogLoaded);
+    i18n.on("loaded" as any, onResourceLoaded);
+    return () => {
+      i18n.off("hardpyCatalogLoaded" as any, onCatalogLoaded);
+      i18n.off("loaded" as any, onResourceLoaded);
+    };
+  }, [i18n]);
+
+  /**
+   * Languages available in the cog-menu picker: union of TOML primary +
+   * secondary + English fallback + every language the catalog has
+   * translations for, deduplicated. Operator can switch to any of these
+   * mid-run; TOML defaults restore on page reload.
+   */
+  const availableLanguages: string[] = React.useMemo(() => {
+    const langs: string[] = [];
+    const add = (code: string | null | undefined): void => {
+      if (code && !langs.includes(code)) langs.push(code);
+    };
+    add(primaryConfigLang);
+    add(secondaryConfigLang);
+    add("en");
+    for (const lang of catalogLanguages) add(lang);
+    return langs;
+  }, [primaryConfigLang, secondaryConfigLang, catalogLanguages]);
+
+  /**
+   * Display label for a language code, shown in the code's own script (e.g.
+   * "中文" for "zh") via Intl.DisplayNames. Falls back to the upper-case code
+   * if the browser doesn't support the API for that language.
+   */
+  const getLanguageLabel = (code: string): string => {
+    try {
+      return (
+        new Intl.DisplayNames([code], { type: "language" }).of(code) ??
+        code.toUpperCase()
+      );
+    } catch {
+      return code.toUpperCase();
+    }
+  };
+
+  /**
+   * Switch the panel primary language. Not persisted — TOML defaults restore
+   * on next page load.
+   */
+  const handleSelectLanguage = (lang: string): void => {
+    void i18n.changeLanguage(lang);
+  };
+
   /**
    * Renders the settings menu.
    * @returns {JSX.Element} The settings menu component.
@@ -414,6 +479,23 @@ function App(): JSX.Element {
           id="use_debug_info"
           onClick={() => setUseDebugInfo(!use_debug_info)}
         />
+        {availableLanguages.length > 1 && (
+          <MenuItem
+            text={t("app.switchLanguage")}
+            icon="translate"
+            id="switch_language"
+          >
+            {availableLanguages.map((lang) => (
+              <MenuItem
+                key={lang}
+                text={getLanguageLabel(lang)}
+                icon={i18n.language === lang ? "tick" : "blank"}
+                shouldDismissPopover={false}
+                onClick={() => handleSelectLanguage(lang)}
+              />
+            ))}
+          </MenuItem>
+        )}
       </Menu>
     );
   };
@@ -476,6 +558,7 @@ function App(): JSX.Element {
   const useBigButton = hardpyConfig?.frontend?.full_size_button !== false;
 
   return (
+    <LanguageProvider secondaryLang={secondaryConfigLang}>
     <div className="App">
       <ReloadAlert reload_timeout_s={3} />
 
@@ -680,6 +763,7 @@ function App(): JSX.Element {
         }}
       />
     </div>
+    </LanguageProvider>
   );
 }
 

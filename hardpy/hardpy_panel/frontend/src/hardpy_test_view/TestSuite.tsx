@@ -22,6 +22,7 @@ import { TestName } from "./TestName";
 import { TestStatus } from "./TestStatus";
 import TestData from "./TestData";
 import RunTimer from "./RunTimer";
+import { TranslatedText } from "../TranslatedText";
 
 import "./TestSuite.css";
 import { Spin } from "antd";
@@ -399,7 +400,7 @@ export class TestSuite extends React.Component<Props, State> {
         {<span className={Classes.TEXT_DISABLED}>{test_number}</span>}
         {
           <span style={{ marginLeft: "0.5em" }}>
-            {is_loading ? this.props.t("testSuite.stubName") : name}
+            {is_loading ? this.props.t("testSuite.stubName") : <TranslatedText value={name} />}
           </span>
         }
       </H4>

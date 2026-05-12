@@ -42,6 +42,8 @@ class FrontendConfig(BaseModel):
     host: str = "localhost"
     port: int = 8000
     language: str = "en"
+    secondary_display_language: str | None = None
+    report_language: str = "en"
     url: str = "localhost"
     full_size_button: bool = True
     auto_scroll: bool = True

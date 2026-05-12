@@ -191,6 +191,23 @@ def get_custom_css() -> Response:
     return Response(content="", media_type="text/css")
 
 
+@app.get("/api/translations")
+def get_translations() -> dict:
+    """Get merged translation catalog from ``<tests_dir>/translations/*.toml``.
+
+    Returns a language-first nested dict; frontend feeds each language into
+    react-i18next as the ``tests`` namespace for ``i18n:`` prefixed test content.
+
+    Returns:
+        dict: ``{lang: {namespace: {key: template}}}`` or ``{}`` if no catalog.
+    """
+    from hardpy.pytest_hardpy.i18n import Catalog
+
+    catalog = Catalog()
+    catalog.load(ConfigManager.get_tests_path())
+    return catalog.data
+
+
 if "DEBUG_FRONTEND" not in os.environ:
     app.mount(
         "/",
