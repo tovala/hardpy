@@ -371,6 +371,7 @@ function App(): JSX.Element {
                   db_state={row.doc as TestRunI}
                   defaultClose={!ultrawide}
                   currentTestConfig={hardpyConfig?.current_test_config}
+                  autoScroll={hardpyConfig?.frontend?.auto_scroll !== false}
                 ></SuiteList>
               </Card>
             )}

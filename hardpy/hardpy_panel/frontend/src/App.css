@@ -24,6 +24,18 @@ html {
   height: inherit;
 }
 
+/* scroll-padding accounts for the fixed Navbar at top and the fixed footer
+ * at bottom so that scrollIntoView() doesn't park a row behind either of them.
+ * The bottom value covers the big-button footer (~146px) with margin; the
+ * small-button footer is shorter so the row lands slightly higher than ideal,
+ * which is harmless.
+ */
+html,
+.bp5-drawer-body {
+  scroll-padding-top: 60px;
+  scroll-padding-bottom: 160px;
+}
+
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
