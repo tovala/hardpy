@@ -543,7 +543,7 @@ class HardpyPlugin:
         self,
         excinfo: ExceptionInfo[BaseException],
     ) -> tuple[str, str]:
-        """Extract clean operator message + full engineering longrepr from a pytest excinfo.
+        """Extract clean operator message and full engineering longrepr.
 
         Returns:
             tuple[clean_msg, details]:
