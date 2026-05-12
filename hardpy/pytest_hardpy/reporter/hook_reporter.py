@@ -101,6 +101,10 @@ class HookReporter(BaseReporter):
     def set_assertion_msg(self, module_id: str, case_id: str, msg: str | None) -> None:
         """Set case assertion message.
 
+        Operator-facing: the user's clean exception message (no class prefix, no
+        pytest assert decomposition, no stack frames). What the operator panel
+        renders.
+
         Args:
             module_id (str): test module id
             case_id (str): test case id
@@ -114,6 +118,30 @@ class HookReporter(BaseReporter):
             DF.ASSERTION_MSG,
         )
         self.set_doc_value(key, msg)
+
+    def set_assertion_details(
+        self, module_id: str, case_id: str, details: str | None,
+    ) -> None:
+        """Set case assertion details (full pytest longrepr for engineering).
+
+        Engineering-facing: pytest's full failure representation including assert
+        decomposition and stack frames. Carried through to the saved report via
+        ``model_dump()`` for post-run review. The operator panel does not render
+        this.
+
+        Args:
+            module_id (str): test module id
+            case_id (str): test case id
+            details (str | None): full longrepr text
+        """
+        key = self.generate_key(
+            DF.MODULES,
+            module_id,
+            DF.CASES,
+            case_id,
+            DF.ASSERTION_DETAILS,
+        )
+        self.set_doc_value(key, details)
 
     def add_case(self, node_info: NodeInfo) -> None:
         """Add test case to document.

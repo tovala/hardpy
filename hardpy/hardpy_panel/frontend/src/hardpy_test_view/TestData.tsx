@@ -117,7 +117,9 @@ export function TestData(props: Readonly<Props>): React.ReactElement {
         );
       })}
       
-      {/* Render assertions last */}
+      {/* Render assertions last. assertion_msg is the clean operator-facing
+          user message (NEX-1190); the full longrepr with stack frames lives in
+          assertion_details on the case and is for the saved report only. */}
       {props.assertion_msg && (
         <Tag
           key={"assertion"}
@@ -126,7 +128,7 @@ export function TestData(props: Readonly<Props>): React.ReactElement {
           multiline={true}
           intent="warning"
         >
-          {props.assertion_msg.split("\n")[0]}
+          {props.assertion_msg}
         </Tag>
       )}
     </div>

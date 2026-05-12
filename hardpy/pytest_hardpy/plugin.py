@@ -140,6 +140,11 @@ class HardpyPlugin:
         self._is_critical_not_passed = False
         self._start_args = {}
         self._appliance_version = None
+        # Stash of (clean message, full longrepr) per (module_id, case_id) set by
+        # pytest_runtest_makereport (where call.excinfo is available) and consumed
+        # by pytest_runtest_logreport. Lets us record both the operator-facing
+        # message and the engineering-facing details with one capture point.
+        self._assertion_stash: dict[tuple[str, str], tuple[str, str]] = {}
 
         if system() == "Linux":
             signal.signal(signal.SIGTERM, self._stop_handler)
@@ -369,6 +374,13 @@ class HardpyPlugin:
         if is_dut_failure and caused_dut_failure_id is None:
             self._reporter.set_caused_dut_failure_id(module_id, case_id)
 
+        # Stash assertion data for logreport. If the final attempt still has an
+        # excinfo, the case failed; capture both the clean user message and the
+        # full pytest longrepr so logreport can populate both schema fields.
+        if call.excinfo is not None:
+            clean_msg, details = self._extract_assertion_data(call.excinfo)
+            self._assertion_stash[(module_id, case_id)] = (clean_msg, details)
+
     # Reporting hooks
 
     def pytest_runtest_logreport(self, report: TestReport) -> bool | None:
@@ -390,8 +402,18 @@ class HardpyPlugin:
         if report.skipped is False or is_skipped_by_plugin is False:
             self._reporter.set_case_stop_time(module_id, case_id)
 
-        assertion_msg = self._decode_assertion_msg(report.longrepr)
-        self._reporter.set_assertion_msg(module_id, case_id, assertion_msg)
+        # Prefer the data stashed by pytest_runtest_makereport (where excinfo is
+        # accessible so we can split the operator message from the longrepr
+        # cleanly). Fall back to parsing report.longrepr for cases where the
+        # stash is missing (e.g. teardown/setup failures that bypass makereport).
+        stashed = self._assertion_stash.pop((module_id, case_id), None)
+        if stashed is not None:
+            clean_msg, details = stashed
+            self._reporter.set_assertion_msg(module_id, case_id, clean_msg)
+            self._reporter.set_assertion_details(module_id, case_id, details)
+        else:
+            assertion_msg = self._decode_assertion_msg(report.longrepr)
+            self._reporter.set_assertion_msg(module_id, case_id, assertion_msg)
         self._reporter.set_progress(self._progress.calculate(report.nodeid))
         self._results[module_id][case_id] = report.outcome
 
@@ -512,6 +534,55 @@ class HardpyPlugin:
         self._results[module_id][case_id] = case_status
         self._reporter.set_case_status(module_id, case_id, case_status)
         return is_case_stopped
+
+    _ANSI_ESCAPE = re_compile(
+        r"(?:\x1B[@-Z\\-_]|[\x80-\x9A\x9C-\x9F]|(?:\x1B\[|\x9B)[0-?]*[ -/]*[@-~])",
+    )
+
+    def _extract_assertion_data(
+        self,
+        excinfo: ExceptionInfo[BaseException],
+    ) -> tuple[str, str]:
+        """Extract clean operator message and full engineering longrepr.
+
+        Returns:
+            tuple[clean_msg, details]:
+              - clean_msg: the user's exception message (e.g. the second arg of
+                ``assert expr, msg``). No ``AssertionError:`` prefix, no pytest
+                assert decomposition, no stack frames.
+              - details: full pytest longrepr (style="long", showlocals=False),
+                ANSI-stripped. Includes the assert decomposition and stack frames.
+                Stored on the case for engineering review via the saved report.
+        """
+        # str() on the exception instance dispatches to __str__, which for the
+        # standard exception hierarchy returns just args[0] without the type
+        # prefix. Custom message types like hardpy.ErrorCode override __str__
+        # to return their own short form.
+        clean_msg = str(excinfo.value)
+        # When pytest's assertion rewriting is enabled (default), AssertionError
+        # args[0] is `"{user_msg}\nassert <expr>\n + where ..."` — the user's
+        # message with the decomposition appended. Strip everything from the
+        # decomposition marker onward so the operator only sees their own text.
+        # Heuristic — fails only if a user message itself contains "\nassert ",
+        # which is exceedingly rare; worst case is truncation.
+        decomp_idx = clean_msg.find("\nassert ")
+        if decomp_idx >= 0:
+            clean_msg = clean_msg[:decomp_idx]
+        # Bare `assert False` (no user message) produces a string that STARTS
+        # with "assert " (the decomposition alone). Drop it so the placeholder
+        # branch fires.
+        if clean_msg.startswith("assert "):
+            clean_msg = ""
+        # Bare assert (or empty AssertionError) — give the operator panel a
+        # generic placeholder so the tag isn't blank. Non-Assertion exceptions
+        # with no message keep the empty form: that's a code bug to investigate
+        # via assertion_details, not an operator-actionable fail mode.
+        if not clean_msg and issubclass(excinfo.type, AssertionError):
+            clean_msg = "Assert Failed"
+        details = self._ANSI_ESCAPE.sub(
+            "", str(excinfo.getrepr(style="long", showlocals=False)),
+        )
+        return clean_msg, details
 
     def _decode_assertion_msg(
         self,
