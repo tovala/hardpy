@@ -25,7 +25,7 @@ interface Props {
   measurements?: Measurement[];
 }
 
-const TAG_ELEMENT_STYLE = { margin: 2 };
+const TAG_ELEMENT_STYLE = { margin: 2, whiteSpace: "pre-wrap" as const };
 
 /**
  * Renders a list of messages, measurements, and an assertion message as styled tags.
@@ -92,6 +92,7 @@ export function TestData(props: Readonly<Props>): React.ReactElement {
             key={`measurement-${index}`}
             style={TAG_ELEMENT_STYLE}
             minimal={true}
+            multiline={true}
             intent={intent}
           >
             {formatMeasurement(measurement, index)}
@@ -107,6 +108,7 @@ export function TestData(props: Readonly<Props>): React.ReactElement {
               key={key}
               style={TAG_ELEMENT_STYLE}
               minimal={true}
+              multiline={true}
               intent="primary"
             >
               {value}
@@ -121,6 +123,7 @@ export function TestData(props: Readonly<Props>): React.ReactElement {
           key={"assertion"}
           style={TAG_ELEMENT_STYLE}
           minimal={true}
+          multiline={true}
           intent="warning"
         >
           {props.assertion_msg.split("\n")[0]}
