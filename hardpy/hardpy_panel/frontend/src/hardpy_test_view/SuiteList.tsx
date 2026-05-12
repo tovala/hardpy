@@ -95,6 +95,7 @@ interface Props extends WithTranslation {
   db_state: TestRunI;
   defaultClose: boolean;
   currentTestConfig?: string;
+  autoScroll?: boolean;
 }
 
 interface State {
@@ -257,6 +258,7 @@ export class SuiteList extends React.Component<Props, State> {
         test={suite.test}
         defaultOpen={this.elements_count < 5 && !this.props.defaultClose}
         commonTestRunStatus={this.props.db_state.status}
+        autoScroll={this.props.autoScroll}
       />
     );
   }

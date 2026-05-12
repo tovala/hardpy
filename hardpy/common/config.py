@@ -44,6 +44,7 @@ class FrontendConfig(BaseModel):
     language: str = "en"
     url: str = "localhost"
     full_size_button: bool = True
+    auto_scroll: bool = True
 
 
 class StandCloudConfig(BaseModel):
