@@ -168,22 +168,22 @@ export class SuiteList extends React.Component<Props, State> {
         <div>
           <H1>{this.props.currentTestConfig || db_state.name}</H1>
           {db_state.test_stand && (
-            <Tag minimal style={TAG_ELEMENT_STYLE}>
+            <Tag minimal multiline style={TAG_ELEMENT_STYLE}>
               {t("suiteList.standName")}: {db_state.test_stand?.name}
             </Tag>
           )}
           {start && (
-            <Tag minimal style={TAG_ELEMENT_STYLE}>
+            <Tag minimal multiline style={TAG_ELEMENT_STYLE}>
               {t("suiteList.startTime")}: {start + start_tz}
             </Tag>
           )}
           {stop && (
-            <Tag minimal style={TAG_ELEMENT_STYLE}>
+            <Tag minimal multiline style={TAG_ELEMENT_STYLE}>
               {t("suiteList.finishTime")}: {stop + start_tz}
             </Tag>
           )}
           {alert && (
-            <Tag minimal style={TAG_ELEMENT_STYLE}>
+            <Tag minimal multiline style={TAG_ELEMENT_STYLE}>
               {t("suiteList.alert")}: {alert}
             </Tag>
           )}
@@ -192,7 +192,7 @@ export class SuiteList extends React.Component<Props, State> {
               <div style={{ display: "flex", flexWrap: "wrap", gap: "5px" }}>
                 {Object.entries(db_state.test_stand.info).map(
                   ([key, value]) => (
-                    <Tag key={key} minimal style={TAG_ELEMENT_STYLE}>
+                    <Tag key={key} minimal multiline style={TAG_ELEMENT_STYLE}>
                       {db_state.test_stand?.name} {key}:{" "}
                       {typeof value === "string"
                         ? value

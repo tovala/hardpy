@@ -463,7 +463,7 @@ function App(): JSX.Element {
       }
 
       return (
-        <Tag key={key} minimal>
+        <Tag key={key} minimal multiline>
           {statusName}: {statusValue}
         </Tag>
       );
