@@ -39,7 +39,7 @@ _INTERP_RE = re.compile(r"\{\{\s*(\w+)\s*\}\}")
 _FALLBACK_LANG = "en"
 
 
-def parse_i18n_key(value: Any) -> tuple[str, dict[str, Any]] | None:
+def parse_i18n_key(value: Any) -> tuple[str, dict[str, Any]] | None:  # noqa: ANN401
     """Parse a prefixed string into ``(key, args)``.
 
     Returns ``None`` for non-strings or strings without the ``i18n:`` prefix.
@@ -122,7 +122,9 @@ class Catalog:
                 logger.warning("Failed to load %s: %s", path, exc)
                 continue
             if not isinstance(data, dict):
-                logger.warning("Catalog file %s top-level is not an object; skipping", path)
+                logger.warning(
+                    "Catalog file %s top-level is not an object; skipping", path,
+                )
                 continue
             _deep_merge(merged, data)
 
@@ -141,9 +143,10 @@ class Catalog:
 
     @property
     def is_empty(self) -> bool:
+        """True when no catalog files were loaded (empty translations dir or absent)."""
         return not self._data
 
-    def render(self, value: Any, lang: str) -> Any:
+    def render(self, value: Any, lang: str) -> Any:  # noqa: ANN401
         """Render ``i18n:`` keys to prose. Walks dicts/lists recursively.
 
         Non-prefixed strings, non-strings, and unparseable JSON args pass through
@@ -162,7 +165,10 @@ class Catalog:
         if template is None and lang != _FALLBACK_LANG:
             template = _lookup_nested(self._data.get(_FALLBACK_LANG, {}), key)
         if template is None:
-            logger.debug("i18n key %r not in %s or %s; emitting raw key", key, lang, _FALLBACK_LANG)
+            logger.debug(
+                "i18n key %r not in %s or %s; emitting raw key",
+                key, lang, _FALLBACK_LANG,
+            )
             return key
         return _interpolate(template, args)
 
