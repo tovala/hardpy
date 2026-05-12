@@ -1,0 +1,70 @@
+{
+  "app": {
+    "title": "แผงควบคุม HardPy",
+    "lastLaunch": "เริ่มทำงานล่าสุด:",
+    "duration": "ระยะเวลา",
+    "seconds": "วินาที",
+    "soundOn": "เปิดเสียง",
+    "soundOff": "ปิดเสียง",
+    "debugOn": "เปิดโหมดดีบัก",
+    "debugOff": "ปิดโหมดดีบัก",
+    "connection": "กำลังเชื่อมต่อ... 🧐🔎",
+    "dbError": "ข้อผิดพลาดการเชื่อมต่อฐานข้อมูล 🙅🏽‍♀️🚫",
+    "noEntries": "ไม่มีรายการในฐานข้อมูล 🙅🏽‍♀️🚫",
+    "status": {
+      "ready": "พร้อม",
+      "run": "กำลังทำงาน",
+      "passed": "ผ่าน",
+      "failed": "ล้มเหลว",
+      "stopped": "หยุด",
+      "unknown": "ไม่ทราบ"
+    },
+    "version": "เวอร์ชัน",
+    "switchLanguage": "เปลี่ยนภาษา",
+    "completion": {
+      "pass": "ผ่าน",
+      "fail": "ล้มเหลว",
+      "failedTestCasesHeader": "กรณีทดสอบที่ล้มเหลว ({{count}}):",
+      "clickToDismiss": "คลิกที่ใดก็ได้เพื่อปิด"
+    }
+  },
+  "button": {
+    "start": "เริ่ม",
+    "stop": "หยุด",
+    "confirm": "ยืนยัน"
+  },
+  "error": {
+    "dbConnectionTitle": "ข้อผิดพลาดการเชื่อมต่อฐานข้อมูล",
+    "dbConnectionMessage": "ไม่สามารถสร้างการเชื่อมต่อกับฐานข้อมูลได้"
+  },
+  "operatorDialog": {
+    "defaultTitle": "ข้อความ",
+    "imageAlt": "ภาพข้อความผู้ปฏิบัติงาน",
+    "htmlCodeTitle": "โค้ด HTML",
+    "htmlLinkTitle": "ลิงก์ HTML",
+    "enterAnswer": "ป้อนคำตอบ",
+    "fieldNotEmpty": "ต้องไม่เว้นช่องว่าง",
+    "notificationTitle": "การแจ้งเตือน",
+    "notificationDesc": "ปิดหน้าต่างแล้ว การทดสอบหยุดลง",
+    "numericInputError": "กรุณาใส่ตัวเลข",
+    "radioButtonError": "กรุณาเลือกหนึ่งตัวเลือก",
+    "checkboxError": "กรุณาเลือกอย่างน้อยหนึ่งตัวเลือก",
+    "pass": "ผ่าน",
+    "fail": "ล้มเหลว"
+  },
+  "suiteList": {
+    "loadingTests": "กำลังโหลดการทดสอบ... 🤔",
+    "refreshHint": "ลองรีเฟรชหน้านี้",
+    "standName": "ชื่อสถานี",
+    "status": "สถานะ",
+    "startTime": "เวลาเริ่ม",
+    "finishTime": "เวลาสิ้นสุด",
+    "alert": "การแจ้งเตือน"
+  },
+  "testSuite": {
+    "nameColumn": "ชื่อ",
+    "dataColumn": "ข้อมูล",
+    "loading": "กำลังโหลด...",
+    "stubName": "ชุดทดสอบ"
+  }
+}
