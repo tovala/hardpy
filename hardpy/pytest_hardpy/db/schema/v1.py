@@ -31,7 +31,12 @@ class IBaseResult(BaseModel):
 class CaseStateStore(IBaseResult):
     """Test case description."""
 
+    # `assertion_msg` is the operator-facing user message only (e.g. the second
+    # arg of `assert expr, "msg"`). Kept short and clean for the operator panel.
+    # `assertion_details` carries the full pytest longrepr (decomposition + stack
+    # frames) for engineering review via the saved report.
     assertion_msg: str | None = None
+    assertion_details: str | None = None
     msg: dict | None = None
     measurements: list[NumericMeasurement | StringMeasurement] = []
     chart: Chart | None = None
@@ -44,6 +49,7 @@ class CaseRunStore(IBaseResult):
     """Test case description with artifact."""
 
     assertion_msg: str | None = None
+    assertion_details: str | None = None
     msg: dict | None = None
     measurements: list[NumericMeasurement | StringMeasurement] = []
     chart: Chart | None = None

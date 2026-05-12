@@ -34,7 +34,13 @@ def test_fill_error_code(pytester: Pytester, hardpy_opts: list[str]):
 
             case_id = "test_fill_error_code"
             assertion_msg_1 = report.modules[module_id].cases[case_id].assertion_msg
-            assert "AssertionError: a" in assertion_msg_1
+            # NEX-1190: assertion_msg is the clean user message only (no
+            # "AssertionError: " prefix, no pytest decomposition). The full
+            # longrepr lives in the new assertion_details field.
+            assert assertion_msg_1 == "a"
+            assertion_details_1 = report.modules[module_id].cases[case_id].assertion_details
+            assert assertion_details_1 is not None
+            assert "AssertionError" in assertion_details_1
     """,
     )
     result = pytester.runpytest(*hardpy_opts)

@@ -24,6 +24,7 @@ class DatabaseField(str, Enum):
     TIMEZONE = "timezone"
     MSG = "msg"
     ASSERTION_MSG = "assertion_msg"
+    ASSERTION_DETAILS = "assertion_details"
     PART_NUMBER = "part_number"
     SERIAL_NUMBER = "serial_number"
     SUB_UNITS = "sub_units"
