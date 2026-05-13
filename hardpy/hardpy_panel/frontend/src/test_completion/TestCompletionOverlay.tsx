@@ -28,6 +28,37 @@ const TestCompletionOverlay: React.FC<TestCompletionOverlayProps> = ({
   onDismiss,
 }) => {
   const failedListRef = React.useRef<HTMLDivElement>(null);
+  const pointerStartRef = React.useRef<
+    { x: number; y: number; id: number } | null
+  >(null);
+  // Tap-vs-swipe threshold: swipes beyond this don't dismiss, so an operator
+  // can drag-scroll the failures list (or the screen at large) without the
+  // overlay vanishing under their finger.
+  const TAP_THRESHOLD_PX = 10;
+
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    // Touches/clicks that originate inside the failures list are scroll
+    // intentions — let native scrolling handle them and don't track for dismiss.
+    if (failedListRef.current?.contains(e.target as Node)) {
+      pointerStartRef.current = null;
+      return;
+    }
+    pointerStartRef.current = { x: e.clientX, y: e.clientY, id: e.pointerId };
+  };
+
+  const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    const start = pointerStartRef.current;
+    pointerStartRef.current = null;
+    if (!start || start.id !== e.pointerId) return;
+    const moved = Math.hypot(e.clientX - start.x, e.clientY - start.y);
+    if (moved < TAP_THRESHOLD_PX) {
+      onDismiss();
+    }
+  };
+
+  const handlePointerCancel = () => {
+    pointerStartRef.current = null;
+  };
 
   React.useEffect(() => {
     if (isVisible && testPassed) {
@@ -173,7 +204,9 @@ const TestCompletionOverlay: React.FC<TestCompletionOverlayProps> = ({
   return (
     <div
       style={overlayStyle}
-      onClick={onDismiss}
+      onPointerDown={handlePointerDown}
+      onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerCancel}
       className={Classes.DARK}
       // Dialog is used to ensure start/stop button doesnt get pressed when dismissing
       role="dialog"
