@@ -344,6 +344,66 @@ function App(): JSX.Element {
     };
   }, [showSettingsMenu]);
 
+  // When the settings popover opens, focus its first item and let Up/Down
+  // cycle focus between MenuItems. Blueprint's Menu doesn't auto-focus or
+  // wire arrow-key navigation on its own — without this, an operator on the
+  // GPIO d-pad can open the cog menu (F2) but can't move the highlight.
+  // NEX-1204.
+  React.useEffect(() => {
+    if (!showSettingsMenu) {
+      return;
+    }
+    const getItems = (): HTMLElement[] =>
+      Array.from(
+        document.querySelectorAll<HTMLElement>(
+          '[role="menu"] [role="menuitem"]',
+        ),
+      );
+
+    const focusTimer = setTimeout(() => {
+      const items = getItems();
+      if (items.length > 0) {
+        items[0].focus();
+      }
+    }, 50);
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "F2" || e.key === "Escape") {
+        e.preventDefault();
+        setShowSettingsMenu(false);
+        return;
+      }
+      const items = getItems();
+      if (items.length === 0) {
+        return;
+      }
+      const idx = items.indexOf(document.activeElement as HTMLElement);
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        const next = idx < 0 ? 0 : (idx + 1) % items.length;
+        items[next].focus();
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        const prev = idx < 0 ? items.length - 1 : (idx - 1 + items.length) % items.length;
+        items[prev].focus();
+      } else if (e.key === "Enter" || e.key === " ") {
+        // Blueprint's MenuItem (anchor) responds to click but not space/enter
+        // when focused via JS; route both to a click so confirm-via-keyboard
+        // works for d-pad operators.
+        if (idx >= 0) {
+          e.preventDefault();
+          items[idx].click();
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      clearTimeout(focusTimer);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [showSettingsMenu]);
+
   /**
    * Renders the database content.
    * @returns {JSX.Element} The rendered content.
