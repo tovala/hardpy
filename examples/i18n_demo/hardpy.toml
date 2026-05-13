@@ -21,3 +21,11 @@ secondary_display_language = "en"
 # Canonical language for the persisted/uploaded report (runstore + StandCloud).
 # Statestore keeps raw i18n: keys for live operator-panel translation.
 report_language = "en"
+
+[[test_configs]]
+name = "Mixed (default)"
+file = "pytest.ini"
+
+[[test_configs]]
+name = "All Pass"
+file = "pytest_pass.ini"

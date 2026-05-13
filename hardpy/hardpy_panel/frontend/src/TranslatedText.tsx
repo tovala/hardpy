@@ -104,7 +104,7 @@ export const TranslatedText: React.FC<TranslatedTextProps> = ({
   suppressDuplicate = true,
   className,
 }) => {
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
   const secondaryLang = useSecondaryLanguage();
 
   let parsed: Parsed;
@@ -128,7 +128,12 @@ export const TranslatedText: React.FC<TranslatedTextProps> = ({
     if (!parsed.key) {
       return "";
     }
-    return t(parsed.key, { ...parsed.args, lng: lang, ns: effectiveNs });
+    // getFixedT binds to a specific language regardless of the active one;
+    // passing `lng` as an option to the hook's t() returns the literal key
+    // when the requested language isn't currently active, which printed
+    // "app.completion.pass" beneath the Chinese on midline-lab.
+    const langT = i18n.getFixedT(lang, effectiveNs);
+    return langT(parsed.key, parsed.args);
   };
 
   const primary = renderOne(i18n.language);
