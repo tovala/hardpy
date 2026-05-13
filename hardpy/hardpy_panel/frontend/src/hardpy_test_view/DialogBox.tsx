@@ -498,6 +498,11 @@ export function StartConfirmationDialog(props: Readonly<Props>): JSX.Element {
   const [hasHTML, setHasHTML] = useState(false);
   const maxDimensions = useRef(BASE_DIALOG_DIMENSIONS);
 
+  // Pass/Fail button refs — used for arrow-key focus swap so the operator
+  // can drive the dialog with only arrow keys + start button. NEX-1204.
+  const passBtnRef = useRef<HTMLButtonElement>(null);
+  const failBtnRef = useRef<HTMLButtonElement>(null);
+
   const widgetType = props.widget_type ?? WidgetType.Base;
   const maxSizeFactor =
     screenWidth < screenHeight ? PHONE_SCALE_FACTOR : MONITOR_SCALE_FACTOR;
@@ -992,14 +997,28 @@ export function StartConfirmationDialog(props: Readonly<Props>): JSX.Element {
       </div>
       <div className={Classes.DIALOG_FOOTER}>
         {props.pass_fail ? (
-          <div style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
+          <div
+            style={{ display: "flex", justifyContent: "space-between", width: "100%" }}
+            onKeyDown={(e) => {
+              // Arrow-key focus swap between Pass and Fail. SPACE/ENTER on the
+              // focused button fire its onClick natively. NEX-1204.
+              if (e.key === "ArrowLeft") {
+                e.preventDefault();
+                passBtnRef.current?.focus();
+              } else if (e.key === "ArrowRight") {
+                e.preventDefault();
+                failBtnRef.current?.focus();
+              }
+            }}
+          >
             <Button
               intent="success"
               text={t('operatorDialog.pass')}
               onClick={() => handlePassFail(true)}
               large
-              style={{ 
-                height: "80px", 
+              ref={passBtnRef}
+              style={{
+                height: "80px",
                 minWidth: "120px",
                 fontSize: "16px",
                 fontWeight: "bold"
@@ -1010,8 +1029,10 @@ export function StartConfirmationDialog(props: Readonly<Props>): JSX.Element {
               text={t('operatorDialog.fail')}
               onClick={() => handlePassFail(false)}
               large
-              style={{ 
-                height: "80px", 
+              autoFocus
+              ref={failBtnRef}
+              style={{
+                height: "80px",
                 minWidth: "120px",
                 fontSize: "16px",
                 fontWeight: "bold"

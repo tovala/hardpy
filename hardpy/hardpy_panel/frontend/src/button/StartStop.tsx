@@ -208,6 +208,13 @@ class StartStopButton extends React.Component<Props, State> {
       return;
     }
 
+    // Don't handle space when focus is inside a popover or menu. Blueprint
+    // MenuItems render as anchors (not in `interactiveElements`), so without
+    // this guard SPACE on a focused MenuItem would start a test. NEX-1204.
+    if (target.closest('.bp3-popover, [role="menu"]')) {
+      return;
+    }
+
     event.preventDefault();
     const is_testing_in_progress = this.props.testing_status == "run";
     is_testing_in_progress ? this.hardpy_stop() : this.hardpy_start();
