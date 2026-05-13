@@ -80,6 +80,8 @@ interface TranslatedTextProps {
   /** Skip the default secondary styling (opacity / lighter weight / smaller font).
    * Use when the caller wants to fully control secondary rendering. */
   noDefaultSecondaryStyle?: boolean;
+  /** Render primary and secondary side-by-side instead of stacked vertically. */
+  inline?: boolean;
   /** Whether the secondary row may suppress when identical to primary. Default true. */
   suppressDuplicate?: boolean;
   className?: string;
@@ -98,6 +100,7 @@ export const TranslatedText: React.FC<TranslatedTextProps> = ({
   primaryStyle,
   secondaryStyle,
   noDefaultSecondaryStyle = false,
+  inline = false,
   suppressDuplicate = true,
   className,
 }) => {
@@ -144,7 +147,12 @@ export const TranslatedText: React.FC<TranslatedTextProps> = ({
   return (
     <span
       className={className}
-      style={{ display: "inline-flex", flexDirection: "column", alignItems: "inherit" }}
+      style={{
+        display: "inline-flex",
+        flexDirection: inline ? "row" : "column",
+        alignItems: inline ? "baseline" : "inherit",
+        columnGap: inline ? "0.5em" : undefined,
+      }}
     >
       <span style={primaryStyle}>{primary}</span>
       {displaySecondary && (

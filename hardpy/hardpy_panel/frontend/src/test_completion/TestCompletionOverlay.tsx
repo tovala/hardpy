@@ -27,6 +27,8 @@ const TestCompletionOverlay: React.FC<TestCompletionOverlayProps> = ({
   failedTestCases = [],
   onDismiss,
 }) => {
+  const failedListRef = React.useRef<HTMLDivElement>(null);
+
   React.useEffect(() => {
     if (isVisible && testPassed) {
       // Auto-dismiss after 5 seconds only for PASS
@@ -49,15 +51,45 @@ const TestCompletionOverlay: React.FC<TestCompletionOverlayProps> = ({
       overlay.focus();
     }
 
-    // Only dismiss on confirm-style keys. Scroll keys (PageUp/Down, arrows,
-    // Home/End) must be passed through so the operator can review a long list
-    // of failed cases.
+    // Only dismiss on confirm-style keys. Scroll keys route to the failures
+    // list below so the operator can review a long list of failed cases
+    // without leaving the overlay.
     const DISMISS_KEYS = new Set(["Enter", " ", "Spacebar", "Escape", "Esc"]);
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!isVisible) return;
       if (DISMISS_KEYS.has(e.key)) {
         e.preventDefault();
         onDismiss();
+        return;
+      }
+      const list = failedListRef.current;
+      if (!list) return;
+      const ARROW_STEP = 60;
+      switch (e.key) {
+        case "ArrowDown":
+          list.scrollBy({ top: ARROW_STEP, behavior: "smooth" });
+          e.preventDefault();
+          break;
+        case "ArrowUp":
+          list.scrollBy({ top: -ARROW_STEP, behavior: "smooth" });
+          e.preventDefault();
+          break;
+        case "PageDown":
+          list.scrollBy({ top: list.clientHeight * 0.9, behavior: "smooth" });
+          e.preventDefault();
+          break;
+        case "PageUp":
+          list.scrollBy({ top: -list.clientHeight * 0.9, behavior: "smooth" });
+          e.preventDefault();
+          break;
+        case "Home":
+          list.scrollTo({ top: 0, behavior: "smooth" });
+          e.preventDefault();
+          break;
+        case "End":
+          list.scrollTo({ top: list.scrollHeight, behavior: "smooth" });
+          e.preventDefault();
+          break;
       }
     };
 
@@ -92,28 +124,28 @@ const TestCompletionOverlay: React.FC<TestCompletionOverlayProps> = ({
   };
 
   const titleStyle: React.CSSProperties = {
-    fontSize: "120px",
+    fontSize: "56px",
     fontWeight: "bold",
-    marginBottom: "20px",
     textShadow: "0 4px 8px rgba(0,0,0,0.3)",
+    lineHeight: 1,
   };
 
   const subtitleStyle: React.CSSProperties = {
-    fontSize: "48px",
+    fontSize: "32px",
     fontWeight: "bold",
-    marginBottom: "40px",
     textShadow: "0 2px 4px rgba(0,0,0,0.3)",
+    lineHeight: 1,
   };
 
   const failedCasesStyle: React.CSSProperties = {
-    maxHeight: "60vh",
+    maxHeight: "80vh",
     overflowY: "auto",
     backgroundColor: "rgba(0,0,0,0.3)",
     borderRadius: "8px",
     padding: "20px",
-    marginTop: "20px",
-    width: "80%",
-    maxWidth: "800px",
+    marginTop: "16px",
+    width: "85%",
+    maxWidth: "1000px",
     cursor: "default", // override the parent overlay's pointer cursor inside the scroll area
     scrollbarColor: "rgba(255,255,255,0.6) rgba(255,255,255,0.1)", // visible against the red/green backdrop
     scrollbarWidth: "auto",
@@ -153,10 +185,12 @@ const TestCompletionOverlay: React.FC<TestCompletionOverlayProps> = ({
         primaryStyle={titleStyle}
         secondaryStyle={subtitleStyle}
         noDefaultSecondaryStyle
+        inline
       />
 
       {!testPassed && failedTestCases.length > 0 && (
         <div
+          ref={failedListRef}
           style={failedCasesStyle}
           // Stop click/touch/scroll events from bubbling to the overlay's
           // click-to-dismiss handler. Operator can scroll and select text
