@@ -78,6 +78,10 @@ function App(): JSX.Element {
   const [showConfigOverlay, setShowConfigOverlay] = React.useState(false);
   const [hardpyConfig, setHardpyConfig] = React.useState<any>(null);
 
+  // Settings (cog) popover — controlled so F2 (long-press UP on the GPIO
+  // controller) can open it without a mouse. See NEX-1204.
+  const [showSettingsMenu, setShowSettingsMenu] = React.useState(false);
+
   // Test completion overlay state
   const [showCompletionOverlay, setShowCompletionOverlay] = React.useState(false);
   const [testCompletionData, setTestCompletionData] = React.useState<{
@@ -308,13 +312,29 @@ function App(): JSX.Element {
 
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Let Blueprint's popover handle its own keys (e.g. ESC to dismiss,
+      // arrow keys to navigate MenuItems). NEX-1204.
+      if (showSettingsMenu) {
+        return;
+      }
       if (isDialogOpen()) {
         return;
       }
 
-      if (e.key === "ArrowLeft") {
+      // ArrowLeft is the legacy GPIO-LEFT mapping; Escape is the new mapping
+      // (GPIO long-press LEFT will emit ESC after hardpy-appliance lands the
+      // remap). Both open Select Test Configuration. NEX-1204.
+      if (e.key === "ArrowLeft" || e.key === "Escape") {
         e.preventDefault();
         setShowConfigOverlay(true);
+        return;
+      }
+
+      // F2 opens the settings cog menu (long-press UP on the GPIO controller
+      // will emit F2 after hardpy-appliance lands). NEX-1204.
+      if (e.key === "F2") {
+        e.preventDefault();
+        setShowSettingsMenu(true);
       }
     };
 
@@ -322,7 +342,7 @@ function App(): JSX.Element {
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, []);
+  }, [showSettingsMenu]);
 
   /**
    * Renders the database content.
@@ -640,7 +660,11 @@ function App(): JSX.Element {
               }}
             />
           )}
-          <Popover content={renderSettingsMenu()}>
+          <Popover
+            content={renderSettingsMenu()}
+            isOpen={showSettingsMenu}
+            onInteraction={(nextOpenState) => setShowSettingsMenu(nextOpenState)}
+          >
             <Button className="bp3-minimal" icon="cog" />
           </Popover>
         </Navbar.Group>
