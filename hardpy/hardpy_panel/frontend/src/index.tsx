@@ -12,7 +12,7 @@ import { Provider } from "use-pouchdb";
 import "normalize.css";
 import "@blueprintjs/core/lib/css/blueprint.css";
 import "@blueprintjs/icons/lib/css/blueprint-icons.css";
-import './i18n';
+import { i18nReady } from './i18n';
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 
@@ -49,6 +49,7 @@ const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
 );
 
+await i18nReady;
 const syncURL = await getSyncURL();
 if (syncURL !== undefined) {
   const db = new PouchDB(syncURL);
