@@ -62,6 +62,78 @@ export function parseI18nValue(value: string): Parsed {
   }
 }
 
+export interface ResolvedI18n {
+  primary: string;
+  /** Secondary-language render. ``null`` when no secondary lang is configured
+   * or when ``suppressDuplicate`` collapses an identical secondary. */
+  secondary: string | null;
+}
+
+interface ResolveOptions {
+  /** Static key used when no ``value`` is provided. Mirrors ``TranslatedText.tKey``. */
+  tKey?: string;
+  /** Interpolation args paired with ``tKey``. */
+  args?: Record<string, unknown>;
+  /** Namespace override. Defaults to ``tests`` for ``value`` calls,
+   * ``translation`` for ``tKey`` calls. */
+  ns?: string;
+  /** Suppress secondary when identical to primary. Default ``true``. */
+  suppressDuplicate?: boolean;
+}
+
+/**
+ * Resolve an operator-facing string to primary/secondary-language renders.
+ *
+ * Used by ``TranslatedText`` internally and by call sites that need plain
+ * strings (e.g. Blueprint ``Dialog`` title prop, text-width sizing math).
+ */
+export function useResolveI18nValue(
+  value: string | null | undefined,
+  options: ResolveOptions = {},
+): ResolvedI18n {
+  const { i18n } = useTranslation();
+  const secondaryLang = useSecondaryLanguage();
+  const { tKey, args, ns, suppressDuplicate = true } = options;
+
+  let parsed: Parsed;
+  let isDynamic = false;
+  if (value !== undefined && value !== null) {
+    parsed = parseI18nValue(value);
+    isDynamic = true;
+  } else if (tKey) {
+    parsed = { key: tKey, args };
+  } else {
+    return { primary: "", secondary: null };
+  }
+
+  const effectiveNs = ns ?? (isDynamic ? TESTS_NS : "translation");
+
+  const renderOne = (lang: string): string => {
+    if (parsed.literal !== undefined) {
+      return parsed.literal;
+    }
+    if (!parsed.key) {
+      return "";
+    }
+    // getFixedT binds to a specific language regardless of the active one;
+    // passing `lng` as an option to the hook's t() returns the literal key
+    // when the requested language isn't currently active, which printed
+    // "app.completion.pass" beneath the Chinese on midline-lab.
+    const langT = i18n.getFixedT(lang, effectiveNs);
+    return langT(parsed.key, parsed.args);
+  };
+
+  const primary = renderOne(i18n.language);
+  if (!secondaryLang || secondaryLang === i18n.language) {
+    return { primary, secondary: null };
+  }
+  const secondary = renderOne(secondaryLang);
+  if (suppressDuplicate && secondary === primary) {
+    return { primary, secondary: null };
+  }
+  return { primary, secondary };
+}
+
 interface TranslatedTextProps {
   /** Dynamic runtime string (may be ``i18n:`` prefixed or literal). */
   value?: string | null;
@@ -104,44 +176,14 @@ export const TranslatedText: React.FC<TranslatedTextProps> = ({
   suppressDuplicate = true,
   className,
 }) => {
-  const { i18n } = useTranslation();
-  const secondaryLang = useSecondaryLanguage();
+  const { primary, secondary } = useResolveI18nValue(value, {
+    tKey,
+    args,
+    ns,
+    suppressDuplicate,
+  });
 
-  let parsed: Parsed;
-  let isDynamic = false;
-  if (value !== undefined && value !== null) {
-    parsed = parseI18nValue(value);
-    isDynamic = true;
-  } else if (tKey) {
-    parsed = { key: tKey, args };
-  } else {
-    return null;
-  }
-
-  const defaultNs = isDynamic ? TESTS_NS : "translation";
-  const effectiveNs = ns ?? defaultNs;
-
-  const renderOne = (lang: string): string => {
-    if (parsed.literal !== undefined) {
-      return parsed.literal;
-    }
-    if (!parsed.key) {
-      return "";
-    }
-    // getFixedT binds to a specific language regardless of the active one;
-    // passing `lng` as an option to the hook's t() returns the literal key
-    // when the requested language isn't currently active, which printed
-    // "app.completion.pass" beneath the Chinese on midline-lab.
-    const langT = i18n.getFixedT(lang, effectiveNs);
-    return langT(parsed.key, parsed.args);
-  };
-
-  const primary = renderOne(i18n.language);
-  const shouldShowSecondary = secondaryLang && secondaryLang !== i18n.language;
-  const secondary = shouldShowSecondary ? renderOne(secondaryLang) : null;
-  const displaySecondary = secondary !== null && (!suppressDuplicate || secondary !== primary);
-
-  if (!primary && !displaySecondary) {
+  if (!primary && secondary === null) {
     return null;
   }
 
@@ -160,7 +202,7 @@ export const TranslatedText: React.FC<TranslatedTextProps> = ({
       }}
     >
       <span style={primaryStyle}>{primary}</span>
-      {displaySecondary && (
+      {secondary !== null && (
         <span style={{ ...defaultSecondaryStyle, ...secondaryStyle }}>{secondary}</span>
       )}
     </span>
