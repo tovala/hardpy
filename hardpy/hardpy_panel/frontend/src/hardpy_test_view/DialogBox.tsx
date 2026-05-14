@@ -26,6 +26,50 @@ import {
   calculateDialogDimensions,
 } from "./DialogUtils";
 import { useTranslation } from "react-i18next";
+import { TranslatedText, useResolveI18nValue } from "../TranslatedText";
+
+/**
+ * Render a multi-line, possibly ``i18n:``-prefixed value as a stack of <p>
+ * elements (one per line of the resolved primary string). When a secondary
+ * language is configured, its lines are stacked below with the standard
+ * lighter/smaller treatment.
+ *
+ * Used for ``dialog_text`` and Multistep ``step.info.text`` — both are
+ * authored as free-form prose with embedded newlines, and both flow through
+ * the same i18n catalog as ``set_message`` / ``pytest.fail`` text.
+ */
+const MultilineTranslated: React.FC<{
+  value: string;
+  pStyle?: React.CSSProperties;
+}> = ({ value, pStyle }) => {
+  const { primary, secondary } = useResolveI18nValue(value);
+  if (!primary && secondary === null) {
+    return null;
+  }
+  const secondaryStyle: React.CSSProperties = {
+    ...pStyle,
+    opacity: 0.85,
+    fontSize: "0.75em",
+  };
+  return (
+    <>
+      {primary.split("\n").map((line, i) => (
+        // Lines are stable within a render; index-as-key is appropriate here
+        // (duplicate lines were producing duplicate keys with the previous
+        // `key={line.trim()}` pattern).
+        <p key={`p-${i}`} style={pStyle}>
+          {line}
+        </p>
+      ))}
+      {secondary !== null &&
+        secondary.split("\n").map((line, i) => (
+          <p key={`s-${i}`} style={secondaryStyle}>
+            {line}
+          </p>
+        ))}
+    </>
+  );
+};
 
 const HEX_BASE = 16;
 const screenWidth = window.screen.width;
@@ -174,7 +218,7 @@ const RadioButtonComponent = ({
     {fields?.map((option: string) => (
       <Radio
         key={option}
-        label={option}
+        label={<TranslatedText value={option} inline noDefaultSecondaryStyle />}
         checked={selectedRadioButton === option}
         onChange={() => setSelectedRadioButton(option)}
         onKeyDown={handleKeyDown}
@@ -207,7 +251,7 @@ const CheckboxComponent = ({
     {fields?.map((option: string) => (
       <Checkbox
         key={option}
-        label={option}
+        label={<TranslatedText value={option} inline noDefaultSecondaryStyle />}
         checked={selectedCheckboxes.includes(option)}
         autoFocus={option === fields[0]}
         onKeyDown={handleKeyDown}
@@ -395,18 +439,29 @@ const renderMultistep = (
   <Tabs id={props.title_bar}>
     {props.widget_info?.steps?.map((step: Step) => (
       <Tab
+        // Tab `id` is a DOM id and `key` is a React reconciliation key — both
+        // stay as the raw value so they remain stable across language toggles.
+        // The visible `title` is routed through TranslatedText so i18n keys
+        // resolve to operator-facing prose.
         id={step.info?.title}
         key={step.info?.title}
-        title={step.info?.title}
+        title={
+          <TranslatedText
+            value={step.info?.title}
+            inline
+            noDefaultSecondaryStyle
+          />
+        }
         style={{ fontSize: `${props.font_size}px` }}
         panel={
           <div className="step-container">
             <div className="step-content">
-              {step.info?.text?.split("\n").map((line) => (
-                <p key={line} style={{ textAlign: "left" }}>
-                  {line}
-                </p>
-              ))}
+              {step.info?.text && (
+                <MultilineTranslated
+                  value={step.info.text}
+                  pStyle={{ textAlign: "left" }}
+                />
+              )}
               {step.info.image && (
                 <img
                   src={`data:image/image;base64,${step.info.image?.base64}`}
@@ -485,6 +540,11 @@ const renderMultistep = (
  */
 export function StartConfirmationDialog(props: Readonly<Props>): JSX.Element {
   const { t, i18n } = useTranslation();
+  // Resolve operator-facing strings up front. ``primary`` feeds layout math
+  // (text-width sizing) so the dialog opens at the correct size for the
+  // localized prose; ``TranslatedText`` is used in the JSX so secondary
+  // language stacking matches the rest of the operator panel.
+  const resolvedDialogText = useResolveI18nValue(props.dialog_text);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [inputText, setInputText] = useState("");
   const [selectedRadioButton, setSelectedRadioButton] = useState("");
@@ -787,7 +847,7 @@ export function StartConfirmationDialog(props: Readonly<Props>): JSX.Element {
   );
 
   const textHeight =
-    (calculateTextLines(props.dialog_text, dialogWidthForText) ?? 1) *
+    (calculateTextLines(resolvedDialogText.primary, dialogWidthForText) ?? 1) *
     lineHeight;
   const step = props.widget_info?.steps?.[0];
   const textStepHeight = step?.info?.text
@@ -875,7 +935,13 @@ export function StartConfirmationDialog(props: Readonly<Props>): JSX.Element {
 
   return (
     <Dialog
-      title={props.title_bar}
+      title={
+        <TranslatedText
+          value={props.title_bar}
+          inline
+          noDefaultSecondaryStyle
+        />
+      }
       icon="info-sign"
       isOpen={dialogOpen}
       onClose={props.pass_fail ? undefined : handleClose}
@@ -904,11 +970,15 @@ export function StartConfirmationDialog(props: Readonly<Props>): JSX.Element {
           padding: "10px",
         }}
       >
-        {props.dialog_text.split("\n").map((line) => (
-          <p key={line.trim()} style={{ textAlign: "left" }}>
-            {line}
-          </p>
-        ))}
+        <MultilineTranslated
+          value={props.dialog_text}
+          pStyle={{ textAlign: "left" }}
+        />
+        {/* First-letter keyboard shortcut still matches the RAW field value,
+            so a fixture using ``i18n:radio.option_a`` keys would have all
+            options share the same "i" prefix and the shortcut would not
+            distinguish them. Fixtures wanting first-letter shortcuts should
+            keep plain-string field labels for now — tracked as a follow-up. */}
         {widgetType === WidgetType.TextInput &&
           renderTextInput(props, inputText, setInputText, handleKeyDown, t)}
         {widgetType === WidgetType.NumericInput &&

@@ -87,10 +87,23 @@ const initializeI18n = async () => {
       },
     });
 
+  // i18next's `preload` schedules loads but does NOT block init(). On slower
+  // devices (or when the kiosk hits the backend before it's fully ready), the
+  // secondary language can stay unloaded — getFixedT then returns the literal
+  // key (e.g. "app.completion.fail"). Explicitly load each preload lang here
+  // so the i18n store is guaranteed populated before the React app renders.
+  for (const lang of preload) {
+    try {
+      await i18n.loadLanguages(lang);
+    } catch (e) {
+      console.error(`Failed to load i18n language ${lang}:`, e);
+    }
+  }
+
   await loadTestsNamespace();
   console.log("i18n initialized with:", i18n.language, "secondary:", secondaryLang);
 };
 
-initializeI18n();
+export const i18nReady = initializeI18n();
 
 export default i18n;

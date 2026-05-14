@@ -615,44 +615,48 @@ export class TestSuite extends React.Component<Props, State> {
     rowIndex: number
   ): React.ReactElement {
     const test = test_topics[rowIndex];
+    // Cases that have not yet reached run_dialog_box arrive without a
+    // dialog_box field; the row renderer still needs to render the status
+    // chip, so guard every access rather than crashing the whole panel.
+    const dialog_box = test.dialog_box;
     const { info: widget_info, type: widget_type } =
-      test.dialog_box.widget || {};
+      dialog_box?.widget || {};
     const {
       base64: image_base64,
       width: image_width,
       border: image_border,
-    } = test.dialog_box.image || {};
+    } = dialog_box?.image || {};
 
     return this.commonCellRender(
       <div style={{ marginTop: "0.2em", marginBottom: "0.2em" }}>
-        {test.dialog_box.dialog_text &&
+        {dialog_box?.dialog_text &&
           test.status === "run" &&
           this.props.commonTestRunStatus === "run" &&
-          test.dialog_box.visible && (
+          dialog_box.visible && (
             <StartConfirmationDialog
-              title_bar={test.dialog_box.title_bar ?? test.name}
-              dialog_text={test.dialog_box.dialog_text}
+              title_bar={dialog_box.title_bar ?? test.name}
+              dialog_text={dialog_box.dialog_text}
               widget_info={widget_info}
               widget_type={widget_type}
               image_base64={image_base64}
               image_width={image_width}
               image_border={image_border}
-              is_visible={test.dialog_box.visible}
-              id={test.dialog_box.id}
-              font_size={test.dialog_box.font_size}
+              is_visible={dialog_box.visible}
+              id={dialog_box.id}
+              font_size={dialog_box.font_size}
               html_code={
-                test.dialog_box.html?.is_raw_html
-                  ? test.dialog_box.html?.code_or_url
+                dialog_box.html?.is_raw_html
+                  ? dialog_box.html?.code_or_url
                   : undefined
               }
               html_url={
-                !test.dialog_box.html?.is_raw_html
-                  ? test.dialog_box.html?.code_or_url
+                !dialog_box.html?.is_raw_html
+                  ? dialog_box.html?.code_or_url
                   : undefined
               }
-              html_width={test.dialog_box.html?.width}
-              html_border={test.dialog_box.html?.border}
-              pass_fail={test.dialog_box.pass_fail}
+              html_width={dialog_box.html?.width}
+              html_border={dialog_box.html?.border}
+              pass_fail={dialog_box.pass_fail}
             />
           )}
         <TestStatus

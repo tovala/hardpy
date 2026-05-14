@@ -9,15 +9,66 @@
       "printer_check": "Printer Check",
       "serial_check": "Serial Number Check",
       "cycle_check": "Cycle Counter Check",
-      "shutdown_check": "Shutdown Sequence"
+      "shutdown_check": "Shutdown Sequence",
+      "dialog_basic": "Dialog: confirm",
+      "dialog_text_input": "Dialog: serial-number scan",
+      "dialog_radio": "Dialog: select fixture lane",
+      "dialog_checkbox": "Dialog: select harnesses installed",
+      "dialog_multistep": "Dialog: multistep walkthrough"
     },
     "modules": {
       "module_basic": "Basic Demo",
-      "module_advanced": "Advanced Demo"
+      "module_advanced": "Advanced Demo",
+      "module_dialog": "Dialog Demo"
     },
     "info": {
       "ready": "Station ready",
       "cycle": "Running cycle {{n}} of {{total}}"
+    },
+    "dialog": {
+      "confirm_visual": {
+        "title": "Visual inspection",
+        "body": "Inspect the unit under test.\nConfirm there are no visible defects."
+      },
+      "scan_sn": {
+        "title": "Scan serial number",
+        "body": "Scan the unit's serial number with the handheld scanner.\nExpected prefix: {{prefix}}"
+      },
+      "select_lane": {
+        "title": "Select fixture lane",
+        "body": "Pick the lane this DUT is loaded on."
+      },
+      "select_harnesses": {
+        "title": "Select harnesses installed",
+        "body": "Check every harness currently routed through the fixture."
+      },
+      "multistep_walkthrough": {
+        "title": "Multistep walkthrough"
+      }
+    },
+    "lane": {
+      "left": "Left lane",
+      "right": "Right lane",
+      "center": "Center lane"
+    },
+    "harness": {
+      "power": "Power harness",
+      "sensor": "Sensor harness",
+      "comms": "Comms harness"
+    },
+    "step": {
+      "power_on": {
+        "title": "Power on",
+        "body": "Flip the bench supply to ON.\nWait for the green status LED."
+      },
+      "connect_scanner": {
+        "title": "Connect scanner",
+        "body": "Plug the barcode scanner into the fixture.\nWait for the audible chime."
+      },
+      "final_check": {
+        "title": "Final check",
+        "body": "Verify the DUT is seated correctly before confirming."
+      }
     }
   },
   "zh": {
@@ -30,15 +81,66 @@
       "printer_check": "打印机检查",
       "serial_check": "序列号检查",
       "cycle_check": "循环计数器检查",
-      "shutdown_check": "关机流程"
+      "shutdown_check": "关机流程",
+      "dialog_basic": "对话框: 确认",
+      "dialog_text_input": "对话框: 扫描序列号",
+      "dialog_radio": "对话框: 选择工位通道",
+      "dialog_checkbox": "对话框: 选择已安装的线束",
+      "dialog_multistep": "对话框: 多步骤演练"
     },
     "modules": {
       "module_basic": "基础演示",
-      "module_advanced": "高级演示"
+      "module_advanced": "高级演示",
+      "module_dialog": "对话框演示"
     },
     "info": {
       "ready": "工位就绪",
       "cycle": "正在运行第 {{n}} 个循环 (共 {{total}} 个)"
+    },
+    "dialog": {
+      "confirm_visual": {
+        "title": "外观检查",
+        "body": "请检查被测产品。\n确认无外观缺陷后继续。"
+      },
+      "scan_sn": {
+        "title": "扫描序列号",
+        "body": "请使用手持扫描枪扫描产品序列号。\n预期前缀: {{prefix}}"
+      },
+      "select_lane": {
+        "title": "选择工位通道",
+        "body": "请选择当前 DUT 所在的通道。"
+      },
+      "select_harnesses": {
+        "title": "选择已安装的线束",
+        "body": "请勾选当前工位上已连接的全部线束。"
+      },
+      "multistep_walkthrough": {
+        "title": "多步骤演练"
+      }
+    },
+    "lane": {
+      "left": "左侧通道",
+      "right": "右侧通道",
+      "center": "中间通道"
+    },
+    "harness": {
+      "power": "电源线束",
+      "sensor": "传感器线束",
+      "comms": "通信线束"
+    },
+    "step": {
+      "power_on": {
+        "title": "上电",
+        "body": "将台式电源打开至 ON。\n等待绿色状态指示灯亮起。"
+      },
+      "connect_scanner": {
+        "title": "连接扫描枪",
+        "body": "将条码扫描枪接入工位。\n等待提示音。"
+      },
+      "final_check": {
+        "title": "最终确认",
+        "body": "确认 DUT 已正确就位后再继续。"
+      }
     }
   },
   "th": {
@@ -51,15 +153,66 @@
       "printer_check": "ตรวจสอบเครื่องพิมพ์",
       "serial_check": "ตรวจสอบหมายเลขเครื่อง",
       "cycle_check": "ตรวจสอบตัวนับรอบ",
-      "shutdown_check": "ขั้นตอนการปิดเครื่อง"
+      "shutdown_check": "ขั้นตอนการปิดเครื่อง",
+      "dialog_basic": "กล่องโต้ตอบ: ยืนยัน",
+      "dialog_text_input": "กล่องโต้ตอบ: สแกนหมายเลขเครื่อง",
+      "dialog_radio": "กล่องโต้ตอบ: เลือกช่องของฟิกซ์เจอร์",
+      "dialog_checkbox": "กล่องโต้ตอบ: เลือกชุดสายไฟที่ติดตั้ง",
+      "dialog_multistep": "กล่องโต้ตอบ: ขั้นตอนหลายลำดับ"
     },
     "modules": {
       "module_basic": "การสาธิตพื้นฐาน",
-      "module_advanced": "การสาธิตขั้นสูง"
+      "module_advanced": "การสาธิตขั้นสูง",
+      "module_dialog": "การสาธิตกล่องโต้ตอบ"
     },
     "info": {
       "ready": "สถานีพร้อม",
       "cycle": "กำลังรันรอบที่ {{n}} จาก {{total}}"
+    },
+    "dialog": {
+      "confirm_visual": {
+        "title": "ตรวจสอบด้วยสายตา",
+        "body": "ตรวจสอบอุปกรณ์ที่ทดสอบ\nยืนยันว่าไม่มีตำหนิที่มองเห็นได้"
+      },
+      "scan_sn": {
+        "title": "สแกนหมายเลขเครื่อง",
+        "body": "สแกนหมายเลขเครื่องด้วยเครื่องสแกนแบบมือถือ\nคำนำหน้าที่คาดไว้: {{prefix}}"
+      },
+      "select_lane": {
+        "title": "เลือกช่องของฟิกซ์เจอร์",
+        "body": "เลือกช่องที่ DUT วางอยู่"
+      },
+      "select_harnesses": {
+        "title": "เลือกชุดสายไฟที่ติดตั้ง",
+        "body": "เลือกชุดสายไฟทุกชุดที่เดินผ่านฟิกซ์เจอร์"
+      },
+      "multistep_walkthrough": {
+        "title": "ขั้นตอนหลายลำดับ"
+      }
+    },
+    "lane": {
+      "left": "ช่องซ้าย",
+      "right": "ช่องขวา",
+      "center": "ช่องกลาง"
+    },
+    "harness": {
+      "power": "สายไฟ",
+      "sensor": "สายเซ็นเซอร์",
+      "comms": "สายสื่อสาร"
+    },
+    "step": {
+      "power_on": {
+        "title": "เปิดเครื่อง",
+        "body": "เปิดแหล่งจ่ายไฟไปที่ ON\nรอจนกว่าไฟแสดงสถานะจะเป็นสีเขียว"
+      },
+      "connect_scanner": {
+        "title": "เชื่อมต่อสแกนเนอร์",
+        "body": "เสียบเครื่องสแกนบาร์โค้ดเข้ากับฟิกซ์เจอร์\nรอสัญญาณเสียง"
+      },
+      "final_check": {
+        "title": "ตรวจสอบขั้นสุดท้าย",
+        "body": "ตรวจสอบให้แน่ใจว่า DUT วางถูกต้องก่อนยืนยัน"
+      }
     }
   }
 }
