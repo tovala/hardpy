@@ -41,6 +41,7 @@ frontend_default_full_size_button = False
 frontend_default_sound_on = False
 frontend_default_manual_collect = False
 frontend_default_measurement_display = True
+frontend_default_auto_scroll = False
 stand_cloud_default_addr = "standcloud.everypin.io"
 stand_cloud_dafault_connection_only = False
 stand_cloud_default_api_key = ""
@@ -104,6 +105,7 @@ def test_frontend_config():
     assert config.sound_on == frontend_default_sound_on
     assert config.manual_collect == frontend_default_manual_collect
     assert config.measurement_display == frontend_default_measurement_display
+    assert config.auto_scroll == frontend_default_auto_scroll
 
 
 def test_stand_cloud_config():
@@ -134,6 +136,7 @@ def test_hardpy_config():
     assert config.frontend.sound_on == frontend_default_sound_on
     assert config.frontend.manual_collect == frontend_default_manual_collect
     assert config.frontend.measurement_display == frontend_default_measurement_display
+    assert config.frontend.auto_scroll == frontend_default_auto_scroll
     assert config.stand_cloud.address == stand_cloud_default_addr
     assert config.stand_cloud.connection_only == stand_cloud_dafault_connection_only
     assert config.stand_cloud.api_key == stand_cloud_default_api_key
@@ -189,6 +192,7 @@ def test_read_config_success(tmp_path: Path):
             "sound_on": frontend_default_sound_on,
             "manual_collect": True,
             "measurement_display": frontend_default_measurement_display,
+            "auto_scroll": frontend_default_auto_scroll,
         },
         "stand_cloud": {
             "address": stand_cloud_default_addr,
@@ -228,6 +232,10 @@ def test_read_config_success(tmp_path: Path):
     assert (
         config.frontend.measurement_display
         == test_config_data["frontend"]["measurement_display"]
+    )
+    assert (
+        config.frontend.auto_scroll
+        == test_config_data["frontend"]["auto_scroll"]
     )
     assert config.stand_cloud.address == test_config_data["stand_cloud"]["address"]
     assert (

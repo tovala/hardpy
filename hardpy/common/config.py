@@ -69,6 +69,7 @@ class FrontendConfig(BaseModel):
     sound_on: bool = False
     manual_collect: bool = False
     measurement_display: bool = True
+    auto_scroll: bool = False
     modal_result: ModalResultConfig = Field(default_factory=lambda: ModalResultConfig())
 
 

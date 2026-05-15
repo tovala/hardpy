@@ -44,6 +44,7 @@ full_size_button = false
 sound_on = false
 measurement_display = true
 manual_collect = false
+auto_scroll = false
 
 [frontend.modal_result]
 enable = false
@@ -169,6 +170,17 @@ When set to `true`, users can selectively choose which tests to run by checking 
 and only the selected tests will be executed when starting the test run.
 When set to `false`, all discovered tests will run automatically as before.
 Default is `false`.
+
+#### auto_scroll
+
+Enable optional auto-scroll and auto-expand behavior in the operator panel.
+When set to `true`, suites auto-expand when one of their cases starts running,
+auto-close when no case in the suite is active or failed, and the viewport
+scrolls the currently running case into view. Scroll is debounced and is
+suppressed for three seconds after any operator-driven scroll
+(`wheel` / `touchmove` / Page / Home / End / Arrow keys), so a manual
+scroll won't get yanked back by the next state update.
+Default is `false`. See [auto-scroll demo](./../examples/auto_scroll_demo.md).
 
 #### modal_result
 

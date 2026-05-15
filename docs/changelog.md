@@ -2,6 +2,12 @@
 
 Versions follow [Semantic Versioning](https://semver.org/): `<major>.<minor>.<patch>`.
 
+## Unreleased
+
+* Add the optional `auto_scroll` flag under `[frontend]` for operator-panel
+  auto-scroll and auto-expand of the currently running case. Default is `false`,
+  so existing fixtures see no behavior change.
+
 ## 0.23.1
 
 * Update the **StandCloud** default address.
